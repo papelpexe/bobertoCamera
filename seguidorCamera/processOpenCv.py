@@ -6,49 +6,6 @@ import constantes as const
 
 ## a detectcao de verde e vermelho na pista vai ser por outra funcao q vai ficar rodando numa thread talvezzzzzz
 
-def calcularErroPID(imagem_path, mostrar_resultados=True):
-
-    img = cv2.cvtColor(imagem_path,cv2.COLOR_BGR2GRAY) # Carregar a imagem
-    
-    if img is None:
-        raise ValueError("Erro ao carregar a imagem. Verifique o caminho.")
-    
-    gaussian = cv2.GaussianBlur(img, (15, 15), 0) # aplica gaussian blur
-    _, binaria = cv2.threshold(gaussian, 115, 255, cv2.THRESH_BINARY) # binariza a imagem
-
-    kernelDilate = np.ones((3,3), np.uint8)
-
-    FrameBinarizado = cv2.erode(binaria,kernelDilate,iterations=5) # dilata o frame
-
-    FrameBinarizado = cv2.bitwise_not(FrameBinarizado) # inverte os pixeis de preto pra branco e vice versa
-
-
-    
-    # Obter dimensões
-    altura, largura = binaria.shape
-    meio = largura // 2
-
-    binaria = binaria[:, int(meio/2):int(3*meio/2)]
-    # cam.frameProcessado = binaria
-
-       # Obter dimensões
-    altura, largura = binaria.shape
-    meio = largura // 2
-    
-    # Dividir a imagem
-    lado_esquerdo = binaria[:, :meio]
-    lado_direito = binaria[:, meio:]
-    
-    # Contar pixels pretos (valor 0) e brancos (valor 255)
-    pretos_esquerdo = np.sum(lado_esquerdo == 0)
-    pretos_direito = np.sum(lado_direito == 0) 
-
-    # Determinar qual lado tem mais pixels pretos
-    diferenca = pretos_esquerdo - pretos_direito
-
-    return diferenca
-
-
 def seguidor_centro(img):
    
     frame = img
@@ -85,79 +42,6 @@ def seguidor_centro(img):
 
 #esq e dir estao invertidos dps concerta
 def verificaIntercessao(img):
-    
-    frame = img
-    height, width, _ = frame.shape
-    metade = width/2
-    existeEsq = False
-    existeDir = False
-    existeCima = False
-    resultado = "nada"
-
-    # Processamento
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    _, binary = cv2.threshold(blur, 110, 255, cv2.THRESH_BINARY_INV)
-    # Opcional: binary = cv2.bitwise_not(binary)
-    roi_height = 140
-    roi = binary[int(height/2 - roi_height/2):int(height/2 + roi_height/2), int(metade/2):int(3*metade/2)]
-    # roi = binary[int(height/2 - roi_height/2):int(height/2 + roi_height/2), :]
-
-    frameCima = binary[0:int(height/2 - (3*roi_height/4)), int(metade/2):int(3*metade/2)]
-
-    heightbin, widthbin = roi.shape
-    frameEsq = roi[:, int(3*widthbin/2):widthbin]
-    frameDir = roi[:, 0:int(widthbin/4)]
-
-    ## cria os contornos referentes a cada parte da imagem
-    contoursEsq, _ = cv2.findContours(frameEsq, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    contoursDir, _ = cv2.findContours(frameDir, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    contoursCima, _ = cv2.findContours(frameCima, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    ## verifica se existem contornos em cada parte da imagem
-    if len(contoursEsq) > 0:
-        maiorCntesq = max(contoursEsq, key = cv2.contourArea)
-        print(cv2.contourArea(maiorCntesq))
-        if cv2.contourArea(maiorCntesq) > 1000:
-            existeEsq = True
-    if len(contoursDir) > 0:
-        maiorCntdir = max(contoursDir, key = cv2.contourArea)
-        print(cv2.contourArea(maiorCntdir))
-        if cv2.contourArea(maiorCntdir) > 1000:
-            existeDir = True
-    if len(contoursCima) > 0:
-        maiorCntcima = max(contoursCima, key = cv2.contourArea)
-        print(cv2.contourArea(maiorCntcima))
-        if cv2.contourArea(maiorCntcima) > 1000:
-            existeCima = True
-
-
-    ##toma a decisao com base nas informacoes obtidas
-    if existeEsq and not existeDir and not existeCima:
-        resultado = "esq"
-    elif existeDir and not existeEsq and not existeCima:
-        resultado = "dir"
-    elif not existeDir and not existeEsq and not existeCima:
-        resultado = "gap"
-    else:
-        resultado = "nada"
-
-    contours = [contoursEsq, contoursDir, contoursCima]
-
-    # Desenhar contornos que são retângulos
-    for cnt in contours:
-        for cnt2 in cnt:
-            area = cv2.contourArea(cnt2)
-            if area > 100:
-                x, y, w, h = cv2.boundingRect(cnt2)
-                cv2.rectangle(roi, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
-    cam.frameProcessado=binary
-
-    return resultado
-
-#esq e dir estao invertidos dps concerta
-def verificaIntercessao2(img):
     
     frame = img
     height, width, _ = frame.shape
@@ -294,7 +178,7 @@ def verificaIntercessao2(img):
     cv2.putText(visualizacao, f"Resultado: {resultado}", (10, height - 20), font, 0.7, (255, 255, 255), 2)
 
     # Usar a imagem colorida para visualização
-    cam.frameProcessado = visualizacao
+    # cam.frameProcessado = visualizacao
 
     return resultado
 

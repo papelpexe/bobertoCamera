@@ -22,7 +22,7 @@ volta = 1
 
 
 def intercessao():
-    decisao = pcv2.verificaIntercessao2(cam.getFrameAtual())
+    decisao = pcv2.verificaIntercessao(cam.getFrameAtual())
 
     if decisao == ESQ:
         print(decisao)
