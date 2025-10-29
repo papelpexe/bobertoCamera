@@ -323,3 +323,44 @@ def motoresTravados():
         print("passou do redutor")
 
     esperaRedutor = False
+
+#função de ver vermelho 
+#temporário para tratar a imagem do vermelho
+import numpy as np
+import cv2
+
+def verVermelho(freme):
+    # Carregar imagem
+    img = freme
+    data = img.reshape((-1, 3))
+    data = np.float32(data)
+
+    # Definir número de cores desejado
+    K = 8  # quanto menor, mais simplificada a imagem
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+
+    # Aplicar K-means
+    _, labels, centers = cv2.kmeans(data, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    centers = np.uint8(centers)
+    simplified = centers[labels.flatten()].reshape(img.shape)
+
+    fheight, fwidth, _ = img.shape
+
+
+     
+    #cortar a imagem
+    
+
+
+
+    #desenhar os contornos
+
+
+    
+
+    #lógica de vermelho
+
+
+
+    
+
