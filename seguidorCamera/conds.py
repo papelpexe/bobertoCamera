@@ -192,7 +192,7 @@ def inclinadoCima():
     else: return False
 
 def vendoPreto():
-    dec = processOpenCv.verificaIntercessao2(camera.getFrameAtual())
+    dec = processOpenCv.verificaIntercessao(camera.getFrameAtual())
     print(dec)
     if dec == 'nada':
         return True

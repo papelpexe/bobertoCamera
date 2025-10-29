@@ -62,12 +62,11 @@ def checarCorHSV(valores):
     v = valores[2]
 
     if (52 >= h >= 26) and (45 >= s >= 15) and (60 >= v >= 24): #VERDE
-        # print(h,s,v)S
+        # print(h,s,v)
         return const.VERDE
-    
+   
     elif ((5 >= h >= 0) or (119 >= h >= 112)) and (s >= 40) and (95 > v > 35): #VERMELHO
         # print("viu vermelho")
-
         return const.VERMELHO
     
     else: return "erro"

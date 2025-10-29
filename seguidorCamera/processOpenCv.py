@@ -183,12 +183,13 @@ def verificaIntercessao(img):
     return resultado
 
 def checarVerdes(img):
-
     verdesDetectados = []
 
     frame = img.copy()
     fheight, fwidth, _ = frame.shape
     
+    # Cria uma cópia da imagem para desenhar os contornos
+    frame_com_contornos = frame.copy()
 
     # Processamento - criar binary para processamento
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -206,18 +207,24 @@ def checarVerdes(img):
 
     contoursVerde, _ = cv2.findContours(maskVerdeK, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    
+    # Desenha todos os contornos verdes encontrados
+    cv2.drawContours(frame_com_contornos, contoursVerde, -1, (0, 255, 255), 2)
 
-    for cnt in contoursVerde:
+    for i, cnt in enumerate(contoursVerde):
         area = cv2.contourArea(cnt)
         x, y, w, h = cv2.boundingRect(cnt)
         meio = int(h/2)
         deltaH = 80
         
-        # if area > 100 and (int(fheight/2) - deltaH < meio and int(fheight/2) + deltaH > meio):
         if area > 100:
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            # Desenha retângulo verde ao redor da região detectada
+            cv2.rectangle(frame_com_contornos, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            
+            # Adiciona texto com o número do contorno
+            cv2.putText(frame_com_contornos, f"Verde {i+1}", (x, y-10), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            indQuadrado = 20
+            indQuadrado = 60
             y1 = max(0, y - indQuadrado)
             y2 = min(frame.shape[0], y + h + indQuadrado)
             x1 = max(0, x - indQuadrado)
@@ -230,13 +237,6 @@ def checarVerdes(img):
             
             qheight, qwidth, _ = quadMaior.shape
 
-            # quadEsqSup = quadMaior[0:int(qheight/2),0:int(qwidth/2)]
-            # quadDirSup = quadMaior[0:int(qheight/2),int(qwidth/2):qwidth]
-            # quadEsqInf = quadMaior[int(qheight/2):qheight,0:int(qwidth/2)]
-            # quadDirInf = quadMaior[int(qheight/2):qheight,int(qwidth/2):qwidth]
-
-            # quads = [quadEsqSup, quadDirSup, quadEsqInf, quadDirInf]
-
             quads = [
                 (0, qheight//2, 0, qwidth//2),      # ESQ_SUP
                 (0, qheight//2, qwidth//2, qwidth), # DIR_SUP  
@@ -244,22 +244,15 @@ def checarVerdes(img):
                 (qheight//2, qheight, qwidth//2, qwidth) # DIR_INF
             ]
 
-
-            # Definir os quadrantes com suas coordenadas relativas
-            quadrantes = [
-                (0, int(qheight/2), 0, int(qwidth/2), "ESQ_SUP"),      # Quadrante Esquerdo Superior
-                (0, int(qheight/2), int(qwidth/2), qwidth, "DIR_SUP"), # Quadrante Direito Superior
-                (int(qheight/2), qheight, 0, int(qwidth/2), "ESQ_INF"), # Quadrante Esquerdo Inferior
-                (int(qheight/2), qheight, int(qwidth/2), qwidth, "DIR_INF") # Quadrante Direito Inferior
-            ]
-
             bools = []
-            for y_start, y_end, x_start, x_end in quads:
-
+            contornos_pretos_quadrantes = []  # Para armazenar contornos pretos por quadrante
+            
+            for j, (y_start, y_end, x_start, x_end) in enumerate(quads):
                 quad = quadMaior[y_start:y_end, x_start:x_end]
                 
                 if quad.size == 0:
                     bools.append(False)
+                    contornos_pretos_quadrantes.append([])
                     continue
                     
                 maskPreto = cv2.inRange(quad, valorBaixoPreto, valorAltoPreto)
@@ -267,22 +260,56 @@ def checarVerdes(img):
                 maskPretoK = cv2.morphologyEx(maskPreto, cv2.MORPH_CLOSE, kernel)
                 contoursPreto, _ = cv2.findContours(maskPretoK, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 
+                # Armazena os contornos pretos para desenho posterior
+                contornos_pretos_quadrantes.append(contoursPreto)
+                
                 if len(contoursPreto) > 0:
                     maiorCntcima = max(contoursPreto, key = cv2.contourArea)
                     if cv2.contourArea(maiorCntcima) > 100:
                         bools.append(True)
-
-                    else: bools.append(False)
-                else: bools.append(False)
+                    else: 
+                        bools.append(False)
+                else: 
+                    bools.append(False)
             
             verde_mov = "verde falso"
             if bools[0] == True and bools[1]==True:
                 if bools[2] and not bools[3]:
-                    verde_mov= "verde dir" #ta invertido aqui por motivos nao explicados
+                    verde_mov= "verde dir"
                 elif bools[3] and not bools[2]:
                     verde_mov= "verde esq"
 
+            
+
+            # Adiciona texto com o resultado da detecção
+            cv2.putText(frame_com_contornos, verde_mov, (x, y+h+20), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+            
+            # Desenha contornos pretos nos quadrantes
+            for j, (y_start, y_end, x_start, x_end) in enumerate(quads):
+                contours_preto = contornos_pretos_quadrantes[j]
+                if contours_preto:
+                    # Ajusta coordenadas para a imagem principal
+                    for contour in contours_preto:
+                        contour_ajustado = contour + [x1 + x_start, y1 + y_start]
+                        cv2.drawContours(frame_com_contornos, [contour_ajustado], -1, (255, 0, 0), 2)
+                        
+                    # Desenha retângulos dos quadrantes
+                    cor_quadrante = (0, 0, 255) if bools[j] else (255, 255, 0)
+                    cv2.rectangle(frame_com_contornos, 
+                                (x1 + x_start, y1 + y_start),
+                                (x1 + x_end, y1 + y_end),
+                                cor_quadrante, 1)
+                    
+                    # Adiciona label do quadrante
+                    nomes_quadrantes = ["ESQ_SUP", "DIR_SUP", "ESQ_INF", "DIR_INF"]
+                    cv2.putText(frame_com_contornos, nomes_quadrantes[j], 
+                               (x1 + x_start, y1 + y_start - 5),
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.3, cor_quadrante, 1)
+
             verdesDetectados.append(verde_mov)
+
+    cam.frameProcessado = frame_com_contornos
     
     return verdesDetectados
 

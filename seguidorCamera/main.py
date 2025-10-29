@@ -122,7 +122,7 @@ def main():
     count = 1
 
     try:
-        while run == 1 and threadRunning:
+        while run == 1:
             #VERIFICAÇÃO NO LOOP PRINCIPAL (obrigatória)
             if thread_controller.stop_requested:
                 raise ThreadStopSignal("Parada solicitada no loop principal")
@@ -219,12 +219,12 @@ except KeyboardInterrupt as e:
     print("\nInterrupção detectada! Parando os motores e encerrando...")
     debug.apagarTodosLeds()
     # Parar os motores
-    motores.desligaMotores()
+
     #desativo todos os servos
-    motores.desativaServo(1)
-    motores.desativaServo(2)
-    motores.desativaServo(3)
-    motores.desativaServo(4)
-    motores.desativaServo(5)
-    motores.desativaServo(6)
+    motores.desativa_servo(1)
+    motores.desativa_servo(2)
+    motores.desativa_servo(3)
+    motores.desativa_servo(4)
+    motores.desativa_servo(5)
+    motores.desativa_servo(6)
     print("Programa encerrado com segurança.")

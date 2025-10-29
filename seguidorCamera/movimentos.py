@@ -195,7 +195,7 @@ def reto(cm, direc = FRENTE, vb = vb_pid + 15, hold = True, cond = None, cond2 =
  
     if direc == FRENTE: 
         m.move_motores(vel, distancia, vel * delta, distancia)
-
+        
     if direc == TRAS: 
         m.move_motores(-vel, distancia, -(vel) * delta, distancia)
 
@@ -291,6 +291,58 @@ def girarGraus(direc, graus, vb = vb_pid + 25, cond = None, cond2 = None, conds 
     m.set_modo_freio(0)
     # print(giroscopio.leAnguloZ())
 
+def curvarGraus(direc, graus, vb = vb_pid + 25, cond = None, cond2 = None, conds = [], cronos = [], delta = 0, hold = True):
+    if hold == True: 
+        m.set_modo_freio(1)
+    m.para_motores()
+    # print("potencia dos motores:",  vb)
+
+    # print("girando")
+    # print(giroscopio.leAnguloZ())
+
+    giroscopio.reseta_z()
+    giroscopio.reseta_z()
+    para = False
+
+    while graus > abs(giroscopio.le_angulo_z()):
+        # cr.reset()
+        # print(angFinal, giroscopio.leAnguloZ())
+        if direc == ESQ:
+            if graus*0.8 < abs(giroscopio.le_angulo_z()):
+                m.velocidade_motores_4x4(2*vb/3, -2*vb/3 - delta)
+
+            else: m.velocidade_motores_4x4(vb, -vb - delta)
+
+        elif direc == DIR:
+            if graus*0.8 < abs(giroscopio.le_angulo_z()):
+                m.velocidade_motores_4x4(-2*vb/3, 2*vb/3 - delta)
+
+            else: m.velocidade_motores_4x4(-vb, vb + delta)
+
+        if cond and cond():  
+            print("pegou cond do giro")
+            break
+        if cond2 and cond2():  
+            print("pegou cond 2 do giro")
+            break
+
+        for c in conds:
+            if c and c():  
+                print("pegou uma das conds do reto")
+                para = True
+
+        for c in cronos:
+            if c.tempo() < 100:  
+                print("pegou um dos cronos do reto")
+                para = True
+
+        if para:
+            break
+
+    m.para_motores()
+    if hold: sleep(0.1)
+    m.set_modo_freio(0)
+    # print(giroscopio.leAnguloZ())
 
 esperaFreio = cr.Cronometro()
 esperaFreio.inicia()
