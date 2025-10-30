@@ -18,10 +18,10 @@ app = Flask(__name__)
 # Initialize camera with error handling
 def init_camera():
     try:
-        camera = cv2.VideoCapture(0)  # Try default camera first
+        camera = cv2.VideoCapture(1)  # Try default camera first
         if not camera.isOpened():
             logger.warning("Camera index 0 not available, trying index 1")
-            camera = cv2.VideoCapture(1)
+            camera = cv2.VideoCapture(2)
         
         if not camera.isOpened():
             logger.error("No camera available")

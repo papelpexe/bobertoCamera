@@ -150,7 +150,7 @@ class Motores:
                 if self.DEBUG:
                     print('Estado atualizado')
                 return True
-        raise Exception('Erro ao ler o estado dos motores')
+        # raise Exception('Erro ao ler o estado dos motores')
 
     def direcao_motor(self, motor, direcao):
         self.lista_motores[0] = self.ENVIA_MOTORES  # comando para enviar motores como velocidade
@@ -226,6 +226,7 @@ class Motores:
         angulo2 = abs(angulo2)  # sempre será positivo
         if angulo2 > 65535:
             return
+        
         motor = 1
         velocidade1 = max(velocidade1, -120)
         velocidade1 = min(velocidade1, 120)
@@ -238,6 +239,63 @@ class Motores:
         if self.motor_invertido[motor - 1]:
             velocidade2 = -velocidade2
         self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
+        motor = 3
+        velocidade1 = max(velocidade1, -120)
+        velocidade1 = min(velocidade1, 120)
+        if self.motor_invertido[motor - 1]:
+            velocidade1 = -velocidade1
+        self.lista_motores[motor] = struct.pack('b', int(velocidade1))[0]
+        motor = 4
+        velocidade2 = max(velocidade2, -120)
+        velocidade2 = min(velocidade2, 120)
+        if self.motor_invertido[motor - 1]:
+            velocidade2 = -velocidade2
+        self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
+
+        self.angulo_motor1 = angulo1
+        self.lista_motores[5] = (angulo1 >> 8) & 0xFF  # pego o byte mais significativo
+        self.lista_motores[6] = angulo1 & 0xFF
+        self.angulo_motor2 = angulo2
+        self.lista_motores[7] = (angulo2 >> 8) & 0xFF  # pego o byte mais significativo
+        self.lista_motores[8] = angulo2 & 0xFF
+        if self.atualiza_instantaneo:
+            self.atualiza_motores()
+            time.sleep(0.05)
+
+    def move_motores(self, velocidade1, angulo1, velocidade2, angulo2):
+        self.lista_motores[0] = self.ENVIA_MOTORES_4X4  # comando para enviar motores como velocidade 4x4
+        angulo1 = abs(angulo1)  # sempre será positivo
+        if angulo1 > 65535:
+            return
+        angulo2 = abs(angulo2)  # sempre será positivo
+        if angulo2 > 65535:
+            return
+        
+        motor = 1
+        velocidade1 = max(velocidade1, -120)
+        velocidade1 = min(velocidade1, 120)
+        if self.motor_invertido[motor - 1]:
+            velocidade1 = -velocidade1
+        self.lista_motores[motor] = struct.pack('b', int(velocidade1))[0]
+        motor = 2
+        velocidade2 = max(velocidade2, -120)
+        velocidade2 = min(velocidade2, 120)
+        if self.motor_invertido[motor - 1]:
+            velocidade2 = -velocidade2
+        self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
+        motor = 3
+        velocidade1 = max(velocidade1, -120)
+        velocidade1 = min(velocidade1, 120)
+        if self.motor_invertido[motor - 1]:
+            velocidade1 = -velocidade1
+        self.lista_motores[motor] = struct.pack('b', int(velocidade1))[0]
+        motor = 4
+        velocidade2 = max(velocidade2, -120)
+        velocidade2 = min(velocidade2, 120)
+        if self.motor_invertido[motor - 1]:
+            velocidade2 = -velocidade2
+        self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
+
         self.angulo_motor1 = angulo1
         self.lista_motores[5] = (angulo1 >> 8) & 0xFF  # pego o byte mais significativo
         self.lista_motores[6] = angulo1 & 0xFF

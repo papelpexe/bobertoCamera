@@ -80,6 +80,7 @@ def seguidorDeLinha():
 
     funcs.verdes()
     funcs.intercessao()
+    # funcs.pararNoVermelhoCamera()
 
     ## segue linha continua
     mov.pid() 
@@ -193,12 +194,13 @@ try:
     # cr.iniciarThreadCronometros()
     # dist.iniciarThreadDistancia()
     # mov.iniciarThreadAnguloMotores()
-
+    coiso = True
     while True:
         tela.escreve('esperando')
 
         while True:
-            if (teclado.botao_pressionado(Teclado.ENTER)):
+            if (teclado.botao_pressionado(Teclado.ENTER)) or coiso :
+                coiso = False
                 break
             sleep(0.1)  # Pequeno sleep para não sobrecarregar
 

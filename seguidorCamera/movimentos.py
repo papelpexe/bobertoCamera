@@ -238,7 +238,7 @@ def reto(cm, direc = FRENTE, vb = vb_pid + 15, hold = True, cond = None, cond2 =
     m.para_motores()
     m.set_modo_freio(0)
 
-def girarGraus(direc, graus, vb = vb_pid + 25, cond = None, cond2 = None, conds = [], cronos = [], delta = 0, hold = True):
+def girarGraus(direc, graus, vb = vb_pid + 35, cond = None, cond2 = None, conds = [], cronos = [], delta = 0, hold = True):
     if hold == True: 
         m.set_modo_freio(1)
     m.para_motores()

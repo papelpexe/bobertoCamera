@@ -334,9 +334,8 @@ import cv2
 #função de tratar a imagem do vermelho
 def verVermelho(freme):
     # Carregar imagem e tratar a imagem ----------------------------------------------------------
+    #ssh banana@192.168.1.121
     img = freme
-    data = img.reshape((-1, 3))
-    data = np.float32(data)
 
     #Aplicar o kenel para ajustar as bordas
     kernel = np.ones((5, 5), np.uint8)
@@ -344,6 +343,8 @@ def verVermelho(freme):
     freme_kernel = cv2.morphologyEx(freme_kernel, cv2.MORPH_CLOSE, kernel)
 
     # Definir número de cores desejado
+    data = freme_kernel.reshape((-1, 3))
+    data = np.float32(data)
     K = 8  # quanto menor, mais simplificada a imagem
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
 
@@ -409,7 +410,7 @@ def verVermelho(freme):
     else: return False
 
 def pararNoVermelhoCamera():
-    if verVermelho():
+    if verVermelho(cam.getFrameAtual()):
         mov.m.modoFreio_(1)
         mov.m.paraMotores()
         sleep(0.3)
