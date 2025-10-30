@@ -329,37 +329,91 @@ def motoresTravados():
 import numpy as np
 import cv2
 
+
+
+#função de tratar a imagem do vermelho
 def verVermelho(freme):
-    # Carregar imagem
+    # Carregar imagem e tratar a imagem ----------------------------------------------------------
     img = freme
     data = img.reshape((-1, 3))
     data = np.float32(data)
+
+    #Aplicar o kenel para ajustar as bordas
+    kernel = np.ones((5, 5), np.uint8)
+    freme_kernel = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+    freme_kernel = cv2.morphologyEx(freme_kernel, cv2.MORPH_CLOSE, kernel)
 
     # Definir número de cores desejado
     K = 8  # quanto menor, mais simplificada a imagem
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
 
-    # Aplicar K-means
+    # Aplicar K-means 
     _, labels, centers = cv2.kmeans(data, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
     centers = np.uint8(centers)
-    simplified = centers[labels.flatten()].reshape(img.shape)
-
-    fheight, fwidth, _ = img.shape
+    simplified = centers[labels.flatten()].reshape(freme_kernel.shape)
 
 
-     
-    #cortar a imagem
+    #cortar a imagem -------------------------------------------------------------------------------
+    altura, largura = simplified.shape[:2]
+
+    y_start = altura // 4
+    x_start = largura // 4
+
+    y_end = altura * 3 // 4
+    x_end = largura * 3 // 4
+
+    frame_cortado = simplified[y_start:y_end, x_start:x_end]
     
 
+    # desenhar e contar os contornos -------------------------------------------------------------------
+    min_area_threshold=50 #só conta os contornos se ele for mair que isso
+    hsv = cv2.cvtColor(frame_cortado, cv2.COLOR_BGR2HSV)
 
+    # 2. Definir os limites (ranges) para a cor vermelha em HSV
 
-    #desenhar os contornos
-
-
+    # O vermelho é uma cor especial no HSV, pois "envolve" o 0 (vai de 0 a 10 e de 170 a 180).
     
+    # Faixa 1: 0 a 10 (H)
+    lower_red_1 = np.array([0, 50, 50])
+    upper_red_1 = np.array([10, 255, 255])
+    
+    # Faixa 2: 170 a 180 (H)
+    lower_red_2 = np.array([170, 50, 50])
+    upper_red_2 = np.array([180, 255, 255])
+
+    # 3. Criar as máscaras e combiná-las
+    mask1 = cv2.inRange(hsv, lower_red_1, upper_red_1)
+    mask2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
+    mask_vermelho = mask1 + mask2    
+
+    # 5. Encontrar os contornos
+    contornos, _ = cv2.findContours(mask_vermelho, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    contagem_contornos = 0
+    frame_com_contornos = img.copy()
+
+    # 6. Iterar sobre os contornos, filtrar por área e desenhar
+    for contorno in contornos:
+        area = cv2.contourArea(contorno)
+
+        # Filtra contornos pequenos (ruído)
+        if area > min_area_threshold:
+            # Desenha o contorno em VERDE (0, 255, 0) no frame
+            cv2.drawContours(frame_com_contornos, [contorno], -1, (0, 255, 0), 2)
+            contagem_contornos += 1
+
 
     #lógica de vermelho
+    if contagem_contornos>200:
+        return True
+    else: return False
 
+def pararNoVermelhoCamera():
+    if verVermelho():
+        mov.m.modoFreio_(1)
+        mov.m.paraMotores()
+        sleep(0.3)
+        mov.m.modoFreio_(0)
 
 
     
