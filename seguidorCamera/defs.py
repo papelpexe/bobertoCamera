@@ -19,7 +19,7 @@ motores.direcao_motor(2, motores.INVERTIDO)
 motores.direcao_motor(1, motores.NORMAL)
 # motores.modoFreio(motores.HOLD)
 
-# motores.PIDMotor(3,3,3)
+motores.pid_motor(3,3,3)
 
 sensorCor = CorReflexao(Portas.SERIAL1)
 # #placaMuxLaser = PlacaMuxVl53l0x(Portas.SERIAL3)

@@ -332,10 +332,11 @@ import cv2
 
 
 #função de tratar a imagem do vermelho
-def verVermelho(freme):
+def verVermelho(frame):
     # Carregar imagem e tratar a imagem ----------------------------------------------------------
     #ssh banana@192.168.1.121
-    img = freme
+    #python3 ~/seguidorCamera/main.py
+    img = frame
 
     #Aplicar o kenel para ajustar as bordas
     kernel = np.ones((5, 5), np.uint8)
@@ -389,25 +390,22 @@ def verVermelho(freme):
 
     # 5. Encontrar os contornos
     contornos, _ = cv2.findContours(mask_vermelho, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    area = cv2.contourArea(contornos)
+   
 
-    contagem_contornos = 0
-    frame_com_contornos = img.copy()
-
-    # 6. Iterar sobre os contornos, filtrar por área e desenhar
-    for contorno in contornos:
-        area = cv2.contourArea(contorno)
-
-        # Filtra contornos pequenos (ruído)
-        if area > min_area_threshold:
-            # Desenha o contorno em VERDE (0, 255, 0) no frame
-            cv2.drawContours(frame_com_contornos, [contorno], -1, (0, 255, 0), 2)
-            contagem_contornos += 1
+    #Desenhar o contornos
+    imagem_com_contotno=cv2.drawContours(img, contornos, 1, (255,255,255), 3)
+    cam.frameProcessado = imagem_com_contotno
 
 
     #lógica de vermelho
-    if contagem_contornos>200:
+    '''
+    if area>200:
         return True
     else: return False
+    '''
+
+
 
 def pararNoVermelhoCamera():
     if verVermelho(cam.getFrameAtual()):

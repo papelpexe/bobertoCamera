@@ -80,7 +80,7 @@ def seguidorDeLinha():
 
     funcs.verdes()
     funcs.intercessao()
-    # funcs.pararNoVermelhoCamera()
+    funcs.pararNoVermelhoCamera()
 
     ## segue linha continua
     mov.pid() 
