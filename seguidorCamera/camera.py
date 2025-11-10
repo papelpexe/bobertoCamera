@@ -20,7 +20,10 @@ def init_camera():
     try:
         camera = cv2.VideoCapture(1)  # Try default camera first
         if not camera.isOpened():
+
             logger.warning("Camera index 0 not available, trying index 1")
+            logger.warning("Camera index 1 not available, trying index 2")
+
             camera = cv2.VideoCapture(2)
         
         if not camera.isOpened():
@@ -28,8 +31,8 @@ def init_camera():
             return None
             
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         camera.set(cv2.CAP_PROP_FPS, 60)
         
         logger.info("Camera initialized successfully")
@@ -59,7 +62,7 @@ def atualizaTransmissao():
             
             # Encode frame to JPEG
             ret, buffer = cv2.imencode('.jpg', frameProcessado, 
-                                     [cv2.IMWRITE_JPEG_QUALITY, 80])
+                                     [cv2.IMWRITE_JPEG_QUALITY, 160])
         
         if ret:
             frame_bytes = buffer.tobytes()
@@ -80,10 +83,12 @@ def health_check():
     return {'status': 'ok', 'camera_available': status}
 
 def vercamera():
-    global frame, frameProcessado
+    global frame, frameProcessado, camera
     
     if camera is None or not camera.isOpened():
+        print('PAROU DE PEGAR IMAGEM')
         time.sleep(1)
+        camera = init_camera()
         return
     
     ret, captured_frame = camera.read()

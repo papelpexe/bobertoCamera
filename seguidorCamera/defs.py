@@ -13,6 +13,8 @@ from tcs import TCS34725
 from vl53 import VL53L0X
 from botoes import Botoes
 
+import threading
+import ctypes
 
 motores = Motores(True)
 motores.direcao_motor(2, motores.INVERTIDO)
@@ -37,66 +39,42 @@ teclado.botao_para_encerrar_programa(Teclado.ESC)
 
 #giroscopio: X e o eixo q usa na rampa, Z e o eixo q usa nos giros
 
-def pausa():
-    #pausa o codigo apertando um botao
+# ========== SISTEMA DE PARADA ELEGANTE ==========
+class ThreadStopSignal(Exception):
+    """Exceção para parada elegante da thread"""
     pass
-    # if (teclado.botaoPressionado(Teclado.CIMA)):
-    #     motores.paraMotores()
-    #     tela.escreve("codigo pausado", 1)
-    #     sleep(0.2) 
-    #     while True:
-    #         if (teclado.botaoPressionado(Teclado.CIMA)): 
-    #             sleep(0.2) 
-    #             break
-    #         pass
-            
-    #     tela.apaga(1)
 
-
-# tela.escreve("esperando apertar botao", 0)
+class ThreadAsyncController:
+    def __init__(self):
+        self.thread_id = None
+        self.stop_requested = False
     
-        # while not (teclado.botaoPressionado(Teclado.ENTER)) and not iniciaDireto:
-        #     sleep(0.1)
-        # sleep(0.3)
-        
-
-        # if (teclado.botaoPressionado(Teclado.ENTER)) or iniciaDireto:
-        #     iniciarThreadMain()
-        #     iniciaDireto = False
-
-        # else: continue
-        # sleep(1.5)
-        
-        # while not (teclado.botaoPressionado(Teclado.ENTER)):
-        #     sleep(0.1)
-
-
-        # sleep(0.5)
-        # if (teclado.botaoPressionado(Teclado.ENTER)):
-        #     tela.escreve("", 0)
-        #     matarThreadMain()
-        #     sleep(0.3)
-        #     while flagThreadMorreu == False:
-        #         continue
-        #     flagThreadMorreu = False
-        #     mov.motores.paraMotores()
-        #     sleep(0.3)
+    def register_thread(self):
+        """Registra a thread para poder pará-la via exceção assíncrona"""
+        self.thread_id = threading.get_ident()
+        self.stop_requested = False
+    
+    def stop_thread(self):
+        """Para a thread levantando exceção nela de forma assíncrona"""
+        if self.thread_id and not self.stop_requested:
+            self.stop_requested = True
+            print(f"🎯 Enviando exceção assíncrona para thread {self.thread_id}")
             
+            # Método 1: Usando ctypes (mais direto)
+            try:
+                result = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                    ctypes.c_long(self.thread_id), 
+                    ctypes.py_object(ThreadStopSignal)
+                )
+                if result == 0:
+                    print("❌ Thread não encontrada ou já terminou")
+                elif result > 1:
+                    print("⚠️  Múltiplas exceções, restaurando...")
+                    ctypes.pythonapi.PyThreadState_SetAsyncExc(self.thread_id, None)
+            except Exception as e:
+                print(f"❌ Erro no método ctypes: {e}")
+                # Método 2: Fallback usando flag
+                self.stop_requested = True
 
-        #     print("\nInterrupção detectada! Parando os motores e entrando em modo de espera")
-        #     # debug.apagarTodosLeds()
-        #     # # Parar os motores
-        #     # motores.desligaMotores()
-        #     # #desativo todos os servos
-        #     # motores.desativaServo(1)
-        #     # motores.desativaServo(2)
-        #     # motores.desativaServo(3)
-        #     # motores.desativaServo(4)
-        #     # motores.desativaServo(5)
-        #     # motores.desativaServo(6)
-        #     # print("Programa encerrado com segurança.")
-        #     #    subprocess.run(["killall python3", None], check=True)
-
-        # else: continue
-        # sleep(1.5)
-        
+# Instância global do controlador
+thread_controller = ThreadAsyncController()

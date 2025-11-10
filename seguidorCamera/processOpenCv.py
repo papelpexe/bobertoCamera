@@ -7,7 +7,8 @@ import constantes as const
 ## a detectcao de verde e vermelho na pista vai ser por outra funcao q vai ficar rodando numa thread talvezzzzzz
 
 def seguidor_centro(img):
-   
+
+    if img is None: return 0; print("frame nulo")
     frame = img
     height, width, _ = frame.shape
     metade = width/2
@@ -43,6 +44,7 @@ def seguidor_centro(img):
 #esq e dir estao invertidos dps concerta
 def verificaIntercessao(img):
     
+    if img is None: return "nada"; print("frame nulo")
     frame = img
     height, width, _ = frame.shape
     metade = width/2
@@ -185,6 +187,7 @@ def verificaIntercessao(img):
 def checarVerdes(img):
     verdesDetectados = []
 
+    if img is None: return verdesDetectados; print("frame nulo")
     frame = img.copy()
     fheight, fwidth, _ = frame.shape
     
@@ -197,8 +200,11 @@ def checarVerdes(img):
     valorBaixoVerde = np.array([40, 80, 70])
     valorAltoVerde = np.array([80, 255, 235])
 
-    valorBaixoPreto = np.array([0, 0, 0])
-    valorAltoPreto = np.array([255, 50, 50])
+    valorBaixoPreto1 = np.array([0, 0, 0])
+    valorAltoPreto1 = np.array([30, 50, 50])
+
+    valorBaixoPreto2 = np.array([90, 0, 0])
+    valorAltoPreto2 = np.array([255, 50, 50])
 
     maskVerde = cv2.inRange(hsv, valorBaixoVerde, valorAltoVerde)
     
@@ -255,17 +261,26 @@ def checarVerdes(img):
                     contornos_pretos_quadrantes.append([])
                     continue
                     
-                maskPreto = cv2.inRange(quad, valorBaixoPreto, valorAltoPreto)
+                maskPreto1 = cv2.inRange(quad, valorBaixoPreto1, valorAltoPreto1)
+                maskPreto2 = cv2.inRange(quad, valorBaixoPreto2, valorAltoPreto2)
                 kernel = np.ones((10,10), np.uint8)
-                maskPretoK = cv2.morphologyEx(maskPreto, cv2.MORPH_CLOSE, kernel)
-                contoursPreto, _ = cv2.findContours(maskPretoK, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                maskPretoK1 = cv2.morphologyEx(maskPreto1, cv2.MORPH_CLOSE, kernel)
+                maskPretoK2 = cv2.morphologyEx(maskPreto2, cv2.MORPH_CLOSE, kernel)
+                contoursPreto1, _ = cv2.findContours(maskPretoK1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                contoursPreto2, _ = cv2.findContours(maskPretoK2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 
                 # Armazena os contornos pretos para desenho posterior
-                contornos_pretos_quadrantes.append(contoursPreto)
+                contornos_pretos_quadrantes.append(contoursPreto1)
+                contornos_pretos_quadrantes.append(contoursPreto2)
                 
-                if len(contoursPreto) > 0:
-                    maiorCntcima = max(contoursPreto, key = cv2.contourArea)
-                    if cv2.contourArea(maiorCntcima) > 100:
+                if len(contoursPreto1) > 0 or len(contoursPreto2) > 0:
+                    if len(contoursPreto1) > 0:
+                        maiorCntcima1 = max(contoursPreto1, key = cv2.contourArea)
+                    else: maiorCntcima1 = contoursPreto1[0]
+                    if len(contoursPreto2) > 0:
+                        maiorCntcima2 = max(contoursPreto2, key = cv2.contourArea)
+                    else: maiorCntcima2 = contoursPreto2[0]
+                    if cv2.contourArea(maiorCntcima1) > 100 or cv2.contourArea(maiorCntcima2) > 100:
                         bools.append(True)
                     else: 
                         bools.append(False)

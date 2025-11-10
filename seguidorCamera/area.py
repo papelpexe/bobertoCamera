@@ -7,7 +7,7 @@ import dist
 from defs import sleep
 from defs import giroscopio
 
-from defs import tela, pausa
+from defs import tela
 from defs import teclado as tcl
 
 import debug

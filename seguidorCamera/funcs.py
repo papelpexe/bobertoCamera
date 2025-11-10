@@ -25,14 +25,15 @@ def intercessao():
     decisao = pcv2.verificaIntercessao(cam.getFrameAtual())
 
     if decisao == ESQ:
-        print(decisao)
+        print('esq')
         # reto(1)
         mov.girarGraus(ESQ, 90, cond = con.vendoPreto)
 
     if decisao == DIR:
-        print(decisao)
+        print('dir')
         # reto(1)
         mov.girarGraus(DIR, 90, cond = con.vendoPreto)
+
 
 def verdes():
     vdetectados = pcv2.checarVerdes(cam.getFrameAtual())
@@ -48,12 +49,12 @@ def verdes():
                 vEsq = True
 
     if vEsq and not vDir: ##verde na esquerda
-        mov.reto(4)
+        mov.reto(5)
         mov.girarGraus(ESQ, 50)
         mov.girarGraus(ESQ, 40, cond = con.vendoPreto)
 
     elif vDir and not vEsq: ##verde na direita
-        mov.reto(4)
+        mov.reto(5)
         mov.girarGraus(DIR, 50)
         mov.girarGraus(DIR, 40, cond = con.vendoPreto)
 

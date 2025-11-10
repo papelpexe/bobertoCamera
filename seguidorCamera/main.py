@@ -17,7 +17,7 @@ from defs import Teclado
 from defs import motores
 import movimentos as mov
 import constantes as const
-from defs import giroscopio
+from defs import giroscopio, thread_controller
 import defs
 import funcs
 import crono as cr
@@ -31,122 +31,14 @@ import conds as con
 import sys
 import ctypes
 
-import area
 import camera
-import processOpenCv
 
-# ========== SISTEMA DE PARADA ELEGANTE ==========
-class ThreadStopSignal(Exception):
-    """Exceção para parada elegante da thread"""
-    pass
+import codigo
 
-class ThreadAsyncController:
-    def __init__(self):
-        self.thread_id = None
-        self.stop_requested = False
-    
-    def register_thread(self):
-        """Registra a thread para poder pará-la via exceção assíncrona"""
-        self.thread_id = threading.get_ident()
-        self.stop_requested = False
-    
-    def stop_thread(self):
-        """Para a thread levantando exceção nela de forma assíncrona"""
-        if self.thread_id and not self.stop_requested:
-            self.stop_requested = True
-            print(f"🎯 Enviando exceção assíncrona para thread {self.thread_id}")
-            
-            # Método 1: Usando ctypes (mais direto)
-            try:
-                result = ctypes.pythonapi.PyThreadState_SetAsyncExc(
-                    ctypes.c_long(self.thread_id), 
-                    ctypes.py_object(ThreadStopSignal)
-                )
-                if result == 0:
-                    print("❌ Thread não encontrada ou já terminou")
-                elif result > 1:
-                    print("⚠️  Múltiplas exceções, restaurando...")
-                    ctypes.pythonapi.PyThreadState_SetAsyncExc(self.thread_id, None)
-            except Exception as e:
-                print(f"❌ Erro no método ctypes: {e}")
-                # Método 2: Fallback usando flag
-                self.stop_requested = True
-
-# Instância global do controlador
-thread_controller = ThreadAsyncController()
-
-def seguidorDeLinha():
-    """funcao contendo todas as outras funcoes que checam e realizam os movimentos necessarios de acordo com os perigos da pista"""
-
-    funcs.verdes()
-    funcs.intercessao()
-    # funcs.pararNoVermelhoCamera()
-
-    ## segue linha continua
-    mov.pid() 
-
-threadRunning = False
-def main():
-    global flagThreadMorreu
-
-    """funcao que contem todo o funcionamento do robo em um loop"""
-    
-    # Registra a thread para poder pará-la
-    thread_controller.register_thread()
-
-    # inicia thread do flask
-    print("Exemplo processamento de IA encontrando posição dos objetos detectados na camera")
-    # o código do flask deve ser iniciado em uma thread separada para poder rodar junto com o código principal
-    flask_thread = threading.Thread(target=camera.iniciar_flask)
-    flask_thread.daemon = True
-    flask_thread.start()
-    
-    ## RESETA AS VARIAVEIS NECESSARIAS E POSICIONA OS SERVOS EM SUAS RESPECTIVAS POSICOES
-    debug.piscarLed(1)
-    giroscopio.reseta_z()
-    debug.apagarTodosLeds()
-    ser.subirGarra()
-    ser.abrirGarra()
-    ser.fecharPorta()
-    mov.m.para_motores()
-    motores.set_modo_freio(0)
-    count = 0
-    const.contadorGap = 0
-    # area.vitimasCapturadas = []
-    # area.vitimasEntregues = False
-    # area.fugiuDaArea = False
-    run = 1
-
-    sleep(1)
-  
-    tela.escreve("MAIN", 0)
-    count = 1
-
-    try:
-        while run == 1:
-            #VERIFICAÇÃO NO LOOP PRINCIPAL (obrigatória)
-            if thread_controller.stop_requested:
-                raise ThreadStopSignal("Parada solicitada no loop principal")
-            
-            # ser.m.atualiza_servos() ## joga o servos na posicao correta, para remediar os espasmos
-
-            seguidorDeLinha()
-
-           
-    except ThreadStopSignal:
-        print("✅ Thread main parada elegantemente!")
-    except KeyboardInterrupt:
-        print("✅ Interrupção via Ctrl+C")
-    finally:
-        # Limpeza garantida
-        debug.piscarLed(1)
-        mov.m.para_motores()
-        flagThreadMorreu = True
-        print("🎯 Thread main finalizada com segurança!")
 
 ## thread principal que contem o funcionamento do robo
 def thread_main():
-    main()
+    codigo.main()
 
 threadMain = None
 def iniciarThreadMain():
@@ -160,7 +52,7 @@ def iniciarThreadMain():
 
 def matarThreadMain():
     global threadMain, threadRunning
-    print("🛑 Solicitando parada da thread main...")
+    print("Solicitando parada da thread main...")
     threadRunning = False
     
     # Para a thread de forma assíncrona
@@ -169,10 +61,10 @@ def matarThreadMain():
     if threadMain and threadMain.is_alive():
         threadMain.join(timeout=2)  # Timeout de segurança
         if threadMain.is_alive():
-            print("⚠️  Thread não respondeu - forçando parada")
+            print("Thread não respondeu - forçando parada")
             # Força parada se necessário
         else:
-            print("✅ Thread main parada com sucesso!")
+            print("Thread main parada com sucesso!")
 
 iniciaDireto = False   
 if len(sys.argv) >= 2:
