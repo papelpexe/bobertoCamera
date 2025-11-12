@@ -29,7 +29,7 @@ def seguidorDeLinha():
 
     funcs.verdes()
     funcs.intercessao()
-    # funcs.pararNoVermelhoCamera()
+    funcs.pararNoVermelhoCamera()
 
     ## segue linha continua
     mov.pid() 
@@ -39,6 +39,7 @@ def main():
     global flagThreadMorreu
 
     """funcao que contem todo o funcionamento do robo em um loop"""
+
     
     # Registra a thread para poder pará-la
     defs.thread_controller.register_thread()

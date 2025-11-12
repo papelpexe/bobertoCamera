@@ -333,7 +333,7 @@ import cv2
 
 
 #função de tratar a imagem do vermelho
-def verVermelho(frame):
+def verVermelhoii(frame):
     # Carregar imagem e tratar a imagem ----------------------------------------------------------
     #ssh banana@192.168.1.121
     #python3 ~/seguidorCamera/main.py
@@ -407,13 +407,85 @@ def verVermelho(frame):
     '''
 
 
+def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
+    """
+    Detecta vermelho considerando apenas um contorno (o maior).
+    Retorno: (resultado_bool, area_do_maior_contorno, frame_com_contorno)
+    - min_area_threshold: ignora contornos menores que esse valor
+    - decision_area_threshold: limiar de área para considerar "vermelho"
+    """
+    print("Analisando vermelho")
+    img = freme.copy()
+
+    # Tratamento morfológico
+    kernel = np.ones((5, 5), np.uint8)
+    freme_kernel = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+    freme_kernel = cv2.morphologyEx(freme_kernel, cv2.MORPH_CLOSE, kernel)
+
+    # K-means para simplificar cores
+    data = freme_kernel.reshape((-1, 3)).astype(np.float32)
+    K = 8
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    _, labels, centers = cv2.kmeans(data, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    centers = np.uint8(centers)
+    simplified = centers[labels.flatten()].reshape(freme_kernel.shape)
+
+    # Cortar a imagem (centro)
+    altura, largura = simplified.shape[:2]
+    y_start, x_start = altura // 4, largura // 4
+    y_end, x_end = altura * 3 // 4, largura * 3 // 4
+    frame_cortado = simplified[y_start:y_end, x_start:x_end]
+
+    # Máscara para vermelho em HSV
+    hsv = cv2.cvtColor(frame_cortado, cv2.COLOR_BGR2HSV)
+    lower_red_1 = np.array([0, 50, 50])
+    upper_red_1 = np.array([10, 255, 255])
+    lower_red_2 = np.array([170, 50, 50])
+    upper_red_2 = np.array([180, 255, 255])
+    mask1 = cv2.inRange(hsv, lower_red_1, upper_red_1)
+    mask2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
+    mask_vermelho = cv2.bitwise_or(mask1, mask2)
+
+    # Encontrar contornos no frame cortado
+    contornos, _ = cv2.findContours(mask_vermelho, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Selecionar o maior contorno válido (acima do min_area_threshold)
+    maior_contorno = None
+    maior_area = 0
+    for c in contornos:
+        area = cv2.contourArea(c)
+        if area > min_area_threshold and area > maior_area:
+            maior_area = area
+            maior_contorno = c
+
+    # Preparar frame de saída desenhando o contorno no frame original
+    frame_com_contornos = img.copy()
+    if maior_contorno is not None:
+        # Transladar contorno do frame_cortado para o frame original
+        offset = np.array([[[x_start, y_start]]])
+        cont_transladado = maior_contorno + offset
+        cv2.drawContours(frame_com_contornos, [cont_transladado], -1, (0, 255, 0), 2)
+        x, y, w, h = cv2.boundingRect(cont_transladado)
+        cv2.putText(frame_com_contornos, f"Area:{int(maior_area)}", (x, y-6),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
+
+    # Decisão: True se a maior área exceder o limiar de decisão
+    resultado = maior_area > decision_area_threshold
+
+    cam.frameProcessado = frame_com_contornos
+    
+
+    return resultado#, int(maior_area), frame_com_contornos
+
 
 def pararNoVermelhoCamera():
     if verVermelho(cam.getFrameAtual()):
-        mov.m.modoFreio_(1)
+        print('Vermelho parar')
         mov.m.paraMotores()
         sleep(0.3)
-        mov.m.modoFreio_(0)
+        while True:
+            continue
+
 
 
     
