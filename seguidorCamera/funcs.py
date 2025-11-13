@@ -422,6 +422,7 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     freme_kernel = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
     freme_kernel = cv2.morphologyEx(freme_kernel, cv2.MORPH_CLOSE, kernel)
 
+    '''
     # K-means para simplificar cores
     data = freme_kernel.reshape((-1, 3)).astype(np.float32)
     K = 8
@@ -429,12 +430,13 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     _, labels, centers = cv2.kmeans(data, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
     centers = np.uint8(centers)
     simplified = centers[labels.flatten()].reshape(freme_kernel.shape)
+    '''
 
     # Cortar a imagem (centro)
-    altura, largura = simplified.shape[:2]
+    altura, largura = freme_kernel.shape[:2]
     y_start, x_start = altura // 4, largura // 4
     y_end, x_end = altura * 3 // 4, largura * 3 // 4
-    frame_cortado = simplified[y_start:y_end, x_start:x_end]
+    frame_cortado = freme_kernel[y_start:y_end, x_start:x_end]
 
     # Máscara para vermelho em HSV
     hsv = cv2.cvtColor(frame_cortado, cv2.COLOR_BGR2HSV)
@@ -481,7 +483,7 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
 def pararNoVermelhoCamera():
     if verVermelho(cam.getFrameAtual()):
         print('Vermelho parar')
-        mov.m.paraMotores()
+        mov.m.para_motores()
         sleep(0.3)
         while True:
             continue
