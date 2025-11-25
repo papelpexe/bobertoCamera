@@ -391,11 +391,12 @@ def verVermelhoii(frame):
 
     # 5. Encontrar os contornos
     contornos, _ = cv2.findContours(mask_vermelho, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    area = cv2.contourArea(contornos)
+    for i, cnt in enumerate(contornos):
+        area = cv2.contourArea(contornos)
    
 
     #Desenhar o contornos
-    imagem_com_contotno=cv2.drawContours(img, contornos, 1, (255,255,255), 3)
+    imagem_com_contotno=cv2.drawContours(img, contornos, -1, (255,255,255), 3)
     cam.frameProcessado = imagem_com_contotno
 
 
@@ -406,7 +407,19 @@ def verVermelhoii(frame):
     else: return False
     '''
 
+def verVermelho_contagem(frame, K=8, min_area_threshold=50):
+    #ssh banana@192.168.1.121
+    #python3 ~/seguidorCamera/main.py
+    """
+    Detecta regiões vermelhas na região central da imagem `frame`,
+    desenha os contornos na imagem original e retorna:
+      - imagem com contornos desenhados (BGR)
+      - número de contornos válidos (int)
+      - perímetro do maior contorno em pixels (float)
+    """
+    img = frame.copy()
 
+<<<<<<< Updated upstream
 def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     """
     Detecta vermelho considerando apenas um contorno (o maior).
@@ -418,18 +431,27 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     img = freme.copy()
 
     # Tratamento morfológico
+=======
+    # Pré-processamento
+>>>>>>> Stashed changes
     kernel = np.ones((5, 5), np.uint8)
     freme_kernel = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
     freme_kernel = cv2.morphologyEx(freme_kernel, cv2.MORPH_CLOSE, kernel)
 
+<<<<<<< Updated upstream
     '''
     # K-means para simplificar cores
     data = freme_kernel.reshape((-1, 3)).astype(np.float32)
     K = 8
+=======
+    # K-means para simplificar cores
+    data = freme_kernel.reshape((-1, 3)).astype(np.float32)
+>>>>>>> Stashed changes
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     _, labels, centers = cv2.kmeans(data, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
     centers = np.uint8(centers)
     simplified = centers[labels.flatten()].reshape(freme_kernel.shape)
+<<<<<<< Updated upstream
     '''
 
     # Cortar a imagem (centro)
@@ -439,6 +461,19 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     frame_cortado = freme_kernel[y_start:y_end, x_start:x_end]
 
     # Máscara para vermelho em HSV
+=======
+
+    # Cortar a região central
+    # Talvez cortar a imagem antes de aplicar o K-means e kernel de mais processamento
+    altura, largura = simplified.shape[:2]
+    y_start = altura // 4
+    x_start = largura // 4
+    y_end = altura * 3 // 4
+    x_end = largura * 3 // 4
+    frame_cortado = simplified[y_start:y_end, x_start:x_end]
+
+    # Máscara do vermelho
+>>>>>>> Stashed changes
     hsv = cv2.cvtColor(frame_cortado, cv2.COLOR_BGR2HSV)
     lower_red_1 = np.array([0, 50, 50])
     upper_red_1 = np.array([10, 255, 255])
@@ -448,6 +483,7 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     mask2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
     mask_vermelho = cv2.bitwise_or(mask1, mask2)
 
+<<<<<<< Updated upstream
     # Encontrar contornos no frame cortado
     contornos, _ = cv2.findContours(mask_vermelho, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -479,6 +515,31 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
 
     return resultado#, int(maior_area), frame_com_contornos
 
+=======
+    # Encontrar contornos
+    contours, _ = cv2.findContours(mask_vermelho, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Filtrar por área e deslocar para coordenadas da imagem original
+    shifted_contours = []
+    perimeters = []
+    for cnt in contours:
+        area = cv2.contourArea(cnt) #pega a área de cada conturno desenhado
+        if area >= min_area_threshold:
+            # deslocar contorno para coordenadas da imagem completa
+            cnt_shifted = cnt.copy()
+            cnt_shifted[:, 0, 0] += x_start
+            cnt_shifted[:, 0, 1] += y_start
+            shifted_contours.append(cnt_shifted)
+            # calcular perímetro do contorno (na subimagem ou no deslocado dá igual)
+            perim = cv2.arcLength(cnt, True)
+            perimeters.append(perim) #Se caso quiser analisar os perimetros dos contornos
+
+    # Número de contornos válidos
+    num_contornos = len(shifted_contours)
+
+    imagem_com_contotno=cv2.drawContours(img, contours, -1, (255,255,255), 3)
+    cam.frameProcessado = imagem_com_contotno
+>>>>>>> Stashed changes
 
 def pararNoVermelhoCamera():
     if verVermelho(cam.getFrameAtual()):
