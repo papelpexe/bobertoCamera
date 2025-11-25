@@ -316,6 +316,7 @@ def checarVerdes(img):
     
     return verdesDetectados
 
+
 # Intervalo de azul em HSV
 valorBaixoAzul = np.array([100, 100, 100])
 valorAltoAzul = np.array([130, 255, 255])
@@ -376,3 +377,144 @@ def encontraObjetos():
                     i+=1
 
     print(cam.getObjDetectados())
+
+#função de tratar a imagem do vermelho
+def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
+    #ssh banana@192.168.1.121
+    #python3 ~/seguidorCamera/main.py
+    """
+    Detecta vermelho considerando apenas um contorno (o maior).
+    Retorno: (resultado_bool, area_do_maior_contorno, frame_com_contorno)
+    - min_area_threshold: ignora contornos menores que esse valor
+    - decision_area_threshold: limiar de área para considerar "vermelho"
+    """
+    print("Analisando vermelho")
+    img = freme.copy()
+
+    # Tratamento morfológico
+    kernel = np.ones((5, 5), np.uint8)
+    freme_kernel = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+    freme_kernel = cv2.morphologyEx(freme_kernel, cv2.MORPH_CLOSE, kernel)
+
+    '''
+    # K-means para simplificar cores
+    data = freme_kernel.reshape((-1, 3)).astype(np.float32)
+    K = 8
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    _, labels, centers = cv2.kmeans(data, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    centers = np.uint8(centers)
+    simplified = centers[labels.flatten()].reshape(freme_kernel.shape)
+    '''
+
+    # Cortar a imagem (centro)
+    altura, largura = freme_kernel.shape[:2]
+    y_start, x_start = altura // 4, largura // 4
+    y_end, x_end = altura * 3 // 4, largura * 3 // 4
+    frame_cortado = freme_kernel[y_start:y_end, x_start:x_end]
+
+    # Máscara para vermelho em HSV
+    hsv = cv2.cvtColor(frame_cortado, cv2.COLOR_BGR2HSV)
+    lower_red_1 = np.array([0, 50, 50])
+    upper_red_1 = np.array([10, 255, 255])
+    lower_red_2 = np.array([170, 50, 50])
+    upper_red_2 = np.array([180, 255, 255])
+    mask1 = cv2.inRange(hsv, lower_red_1, upper_red_1)
+    mask2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
+    mask_vermelho = cv2.bitwise_or(mask1, mask2)
+
+    # Encontrar contornos no frame cortado
+    contornos, _ = cv2.findContours(mask_vermelho, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Selecionar o maior contorno válido (acima do min_area_threshold)
+    maior_contorno = None
+    maior_area = 0
+    for c in contornos:
+        area = cv2.contourArea(c)
+        if area > min_area_threshold and area > maior_area:
+            maior_area = area
+            maior_contorno = c
+
+    # Preparar frame de saída desenhando o contorno no frame original
+    frame_com_contornos = img.copy()
+    if maior_contorno is not None:
+        # Transladar contorno do frame_cortado para o frame original
+        offset = np.array([[[x_start, y_start]]])
+        cont_transladado = maior_contorno + offset
+        cv2.drawContours(frame_com_contornos, [cont_transladado], -1, (0, 255, 0), 2)
+        x, y, w, h = cv2.boundingRect(cont_transladado)
+        cv2.putText(frame_com_contornos, f"Area:{int(maior_area)}", (x, y-6),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
+
+    # Decisão: True se a maior área exceder o limiar de decisão
+    resultado = maior_area > decision_area_threshold
+
+    cam.frameProcessado = frame_com_contornos
+    
+
+    return resultado#, int(maior_area), frame_com_contornos
+
+import cv2
+import numpy as np
+
+def detectaCinza(image_path, min_area_percentage=5.0):
+    """
+    Identifica se uma porcentagem mínima de uma imagem (após corte) é composta por tons de cinza/prata.
+
+    A imagem é cortada para remover 1/4 da altura e 1/4 da largura de cada extremidade,
+    resultando em uma imagem central com metade da altura e metade da largura originais.
+
+    Args:
+        image_path (str): Caminho para o arquivo de imagem.
+        min_area_percentage (float): Porcentagem mínima da área total da imagem CORTADA
+                                     que deve ser cinza/prata para retornar 'Vi cinza'.
+
+    Returns:
+        str: 'Vi cinza' se a condição for atendida, caso contrário, uma string vazia.
+    """
+    # 1. Carregar a imagem
+    img = cv2.imread(image_path)
+
+    if img is None:
+        print(f"Erro: Não foi possível carregar a imagem em {image_path}")
+        return ""
+
+    # 2. Aplicar o corte (Cropping)
+    height, width = img.shape[:2]
+
+    # Calcular os pontos de início e fim para o corte (1/4 de cada lado)
+    # O corte resultará na área central (metade da altura e metade da largura)
+    start_row = height // 4
+    end_row = height - (height // 4)
+    start_col = width // 4
+    end_col = width - (width // 4)
+
+    # Realizar o corte
+    cropped_img = img[start_row:end_row, start_col:end_col]
+
+    # 3. Converter a imagem CORTADA para o espaço de cores HSV
+    hsv = cv2.cvtColor(cropped_img, cv2.COLOR_BGR2HSV)
+
+    # Faixa de cores para cinza/prata em HSV (H: 0-180, S: 0-255, V: 0-255)
+    # Cinza/Prata: Baixa Saturação (S <= 50) e Brilho (V) moderado a alto (V >= 50)
+    lower_gray = np.array([0, 0, 50])
+    upper_gray = np.array([180, 50, 255])
+
+    # 4. Criar a máscara
+    mask = cv2.inRange(hsv, lower_gray, upper_gray)
+
+    # 5. Calcular a área de pixels cinza/prata na imagem CORTADA
+    total_pixels = cropped_img.shape[0] * cropped_img.shape[1]
+    gray_pixels = cv2.countNonZero(mask)
+
+    # 6. Calcular a porcentagem
+    gray_area_percentage = (gray_pixels / total_pixels) * 100
+
+    # 7. Verificar a condição e retornar
+    if gray_area_percentage >= min_area_percentage:
+        return "Vi cinza"
+    else:
+        return ""
+
+# Exemplo de uso (Você precisará de uma imagem para testar):
+# result = detect_gray_area('caminho/para/sua/imagem.jpg', min_area_percentage=10.0)
+# print(result)
