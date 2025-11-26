@@ -422,6 +422,7 @@ def verVermelho_contagem(frame, K=8, min_area_threshold=50):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     """
     Detecta vermelho considerando apenas um contorno (o maior).
@@ -442,10 +443,14 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
 =======
     # Pré-processamento
 >>>>>>> Stashed changes
+=======
+    # Pré-processamento
+>>>>>>> Stashed changes
     kernel = np.ones((5, 5), np.uint8)
     freme_kernel = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
     freme_kernel = cv2.morphologyEx(freme_kernel, cv2.MORPH_CLOSE, kernel)
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -465,10 +470,15 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     # K-means para simplificar cores
     data = freme_kernel.reshape((-1, 3)).astype(np.float32)
 >>>>>>> Stashed changes
+=======
+    # K-means para simplificar cores
+    data = freme_kernel.reshape((-1, 3)).astype(np.float32)
+>>>>>>> Stashed changes
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     _, labels, centers = cv2.kmeans(data, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
     centers = np.uint8(centers)
     simplified = centers[labels.flatten()].reshape(freme_kernel.shape)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -486,6 +496,8 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
     # Cortar a região central
     # Talvez cortar a imagem antes de aplicar o K-means e kernel de mais processamento
@@ -499,6 +511,9 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     # Máscara do vermelho
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -513,6 +528,7 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     mask2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
     mask_vermelho = cv2.bitwise_or(mask1, mask2)
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -552,6 +568,8 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     # Encontrar contornos
     contours, _ = cv2.findContours(mask_vermelho, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -577,6 +595,9 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     cam.frameProcessado = imagem_com_contotno
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
