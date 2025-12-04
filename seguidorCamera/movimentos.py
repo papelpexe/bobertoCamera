@@ -183,14 +183,14 @@ def andaMotor(motor, cm, direc = FRENTE, vb = 50, conds = [], cronos = []):
     m.para_motores()
     
 
-indiceDoReto = 6
+indiceDoReto = 7
 def reto(cm, direc = FRENTE, vb = vb_pid + 15, hold = False, cond = None, cond2 = None, conds = [], cronos = [], delta = 1.1):
     if hold: m.set_modo_freio(1)
     m.para_motores()
 
     anguloEsq = m.angulo_motor(1)
     anguloDir = m.angulo_motor(2)
-
+    
     vel = vb
 
     print("anda reto")

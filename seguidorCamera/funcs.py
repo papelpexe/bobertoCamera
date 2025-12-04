@@ -37,7 +37,15 @@ def intercessao():
     #to colocando aqui para aproveitar a decisão da verificaIntercessao()
     if decisao == 'gap':
         print("Estou em um gap")
-        mov.retoGraus(cm=30, cond=lambda: abs(pcv2.seguidor_centro(cam.getFrameAtual())) > 30)
+        gapCamera()
+
+def gapCamera():
+    mov.retoGraus(cm=30, cond=pcv2.verificaLinhaPreta(cam.getFrameAtual()))
+    if pcv2.verificaIntercessao(cam.getFrameAtual()) == 'gap':
+        print("Gap errado, voltando")
+        mov.retoGraus(cm=-40, cond=pcv2.verificaLinhaPreta(cam.getFrameAtual()))
+        
+      
 
 def verdes():
     vdetectados = pcv2.checarVerdes(cam.getFrameAtual())

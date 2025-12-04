@@ -41,6 +41,28 @@ def seguidor_centro(img):
         error = 0  # Linha não encontrada
     return error
 
+def verificaLinhaPreta(img):
+    """Verifica se existe uma linha preta na imagem, retornando True ou False."""
+    if img is None: return False; print("frame nulo")
+    frame = img
+    height, width, _ = frame.shape
+    metade = width/2
+
+    # Seleção da linha de interesse/ROI (faixa vertical inferior)
+    roi_height = 80
+    roi = frame[0:roi_height, int(metade/2):int(3*metade/2)]
+    
+    # Processamento
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    _, binary = cv2.threshold(blur, 120, 255, cv2.THRESH_BINARY_INV)
+
+    contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    if len(contours) > 0:
+        return True
+    else:
+        return False
+
 #esq e dir estao invertidos dps concerta
 def verificaIntercessao(img):
     
@@ -380,8 +402,7 @@ def encontraObjetos():
 
 #função de tratar a imagem do vermelho
 def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
-    #ssh banana@192.168.1.121
-    #python3 ~/seguidorCamera/main.py
+    
     """
     Detecta vermelho considerando apenas um contorno (o maior).
     Retorno: (resultado_bool, area_do_maior_contorno, frame_com_contorno)
@@ -456,7 +477,7 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
 import cv2
 import numpy as np
 
-def detectaCinza(image_path, min_area_percentage=5.0):
+def detectaPrata(image_path, min_area_percentage=5.0):
     """
     Identifica se uma porcentagem mínima de uma imagem (após corte) é composta por tons de cinza/prata.
 
@@ -472,7 +493,7 @@ def detectaCinza(image_path, min_area_percentage=5.0):
         str: 'Vi cinza' se a condição for atendida, caso contrário, uma string vazia.
     """
     # 1. Carregar a imagem
-    img = cv2.imread(image_path)
+    img = image_path
 
     if img is None:
         print(f"Erro: Não foi possível carregar a imagem em {image_path}")
@@ -511,10 +532,61 @@ def detectaCinza(image_path, min_area_percentage=5.0):
 
     # 7. Verificar a condição e retornar
     if gray_area_percentage >= min_area_percentage:
+        print("Estou vendo cinza")
         return "Vi cinza"
     else:
         return ""
 
-# Exemplo de uso (Você precisará de uma imagem para testar):
-# result = detect_gray_area('caminho/para/sua/imagem.jpg', min_area_percentage=10.0)
-# print(result)
+import sys 
+
+def contains_silver(img, min_contour_area=1000):
+    """
+    Verifica a presença de prata em uma imagem usando análise de textura (Laplacian)
+    e retorna True se um contorno significativo for encontrado, False caso contrário.
+    
+    :param image_path: Caminho para o arquivo de imagem.
+    :param min_contour_area: Área mínima do contorno para ser considerado "significativo".
+    :return: True se a imagem contiver prata, False caso contrário.
+    """
+    # 1. Carregar a imagem
+    if img is None:
+        print("Erro: Não foi possível carregar a imagem ")
+        return False
+
+    # 2. Converter para escala de cinza
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # 3. Análise de Textura: Operador de Laplace
+    # O Laplaciano realça áreas de alta variação de intensidade (textura).
+    laplacian = cv2.Laplacian(img_gray, cv2.CV_64F)
+    laplacian_abs = cv2.convertScaleAbs(laplacian)
+
+    # 4. Limiarização (Thresholding) para isolar áreas de alta textura (prata)
+    # Limiar de 10 é um bom ponto de partida para separar textura de fundo liso.
+    _, texture_mask = cv2.threshold(laplacian_abs, 10, 255, cv2.THRESH_BINARY)
+
+    # 5. Detecção de Contornos na máscara de textura
+    contours, _ = cv2.findContours(texture_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # 6. Verificar a presença de contornos significativos
+    for contour in contours:
+        if cv2.contourArea(contour) > min_contour_area:
+            # Se encontrar um contorno com área maior que o mínimo, consideramos que há prata.
+            return True
+
+    # Se nenhum contorno significativo for encontrado
+    return False
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Uso: python silver_detector_final.py <caminho_para_imagem>")
+        sys.exit(1)
+    
+    image_file = sys.argv[1]
+    
+    # Executar a função e imprimir o resultado
+    result = contains_silver(image_file)
+    print(f"A imagem '{image_file}' contém prata: {result}")
+    
+    # O script retorna o valor booleano para o sistema
+    sys.exit(0 if result else 1)
