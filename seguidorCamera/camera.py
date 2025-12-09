@@ -18,26 +18,27 @@ app = Flask(__name__)
 # Initialize camera with error handling
 def init_camera():
     try:
-        camera = cv2.VideoCapture(1)  # Try default camera first
-        if not camera.isOpened():
+        # Try multiple camera indices to be more robust (0..4)
+        for idx in range(0, 5):
+            logger.info(f"Tentando abrir câmera no índice {idx}...")
+            camera = cv2.VideoCapture(idx)
+            if camera is not None and camera.isOpened():
+                logger.info(f"Camera aberta no índice {idx}")
+                # Configure camera properties
+                try:
+                    camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+                    camera.set(cv2.CAP_PROP_FPS, 30)
+                except Exception:
+                    # Ignore property set failures
+                    pass
+                return camera
+            else:
+                logger.warning(f"Índice {idx} não disponível")
 
-            logger.warning("Camera index 0 not available, trying index 1")
-            logger.warning("Camera index 1 not available, trying index 2")
-
-            camera = cv2.VideoCapture(2)
-        
-        if not camera.isOpened():
-            logger.error("No camera available")
-            return None
-            
-        camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        camera.set(cv2.CAP_PROP_FPS, 60)
-        
-        logger.info("Camera initialized successfully")
-        return camera
-        
+        logger.error("Nenhuma câmera disponível nos índices testados (0-4)")
+        return None
     except Exception as e:
         logger.error(f"Error initializing camera: {e}")
         return None
@@ -86,37 +87,36 @@ def vercamera():
     global frame, frameProcessado, camera
     
     if camera is None or not camera.isOpened():
-        print('PAROU DE PEGAR IMAGEM')
-        time.sleep(1)
+        logger.warning('Camera not available - tentando reiniciar')
+        # tenta reiniciar a câmera (com backoff curto)
         camera = init_camera()
+        time.sleep(0.5)
         return
-    
+
     ret, captured_frame = camera.read()
-    if ret:
-        with lock:
-            frame = captured_frame.copy()
-            # frame = cv2.flip(frame, 0)
-            # Initialize frameProcessado if it's None
-            if frameProcessado is None:
-                frameProcessado = captured_frame.copy()
+    if not ret or captured_frame is None or getattr(captured_frame, 'size', 0) == 0:
+        logger.debug('Leitura da câmera falhou (ret False ou frame vazio)')
+        return
+
+    with lock:
+        frame = captured_frame.copy()
+        # Initialize frameProcessado if it's None
+        if frameProcessado is None:
+            frameProcessado = captured_frame.copy()
 
 def thread_camera():
     logger.info("Camera thread started")
-    
+
     while True:
         try:
             vercamera()
             time.sleep(0.01)  # ~100 FPS capture
         except Exception as e:
-            logger.error(f"Error in camera thread: {e}")
+            logger.exception(f"Error in camera thread: {e}")
             time.sleep(1)
 
 def iniciarThreadCamera():
-    if camera is None or not camera.isOpened():
-        logger.warning("Camera not available")
-        return
-    
-    logger.info("Starting camera thread")
+    logger.info("Starting camera thread (iniciarThreadCamera)")
     threadCamera = threading.Thread(target=thread_camera)
     threadCamera.daemon = True
     threadCamera.start()

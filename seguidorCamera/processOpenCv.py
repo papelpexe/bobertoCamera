@@ -590,3 +590,51 @@ if __name__ == "__main__":
     
     # O script retorna o valor booleano para o sistema
     sys.exit(0 if result else 1)
+
+def salvaImagem(nomeArquivo, dest_dir: str = None):
+    """Salva o frame atual em um diretório.
+
+    - Se `dest_dir` for fornecido, a imagem será salva em `dest_dir/nomeArquivo`.
+    - Se `nomeArquivo` já contiver um caminho (ex.: `pasta/arquivo.jpg`), a pasta será criada automaticamente.
+    - Se nenhum diretório for especificado e `nomeArquivo` for apenas um nome (sem caminho), o arquivo será salvo em `./imagens/`.
+
+    Retorna True em sucesso, False caso contrário.
+    """
+    import os
+    from pathlib import Path
+
+    # Decide caminho final
+    if dest_dir:
+        Path(dest_dir).mkdir(parents=True, exist_ok=True)
+        final_path = os.path.join(dest_dir, nomeArquivo)
+    else:
+        dirname = os.path.dirname(nomeArquivo)
+        if dirname:
+            Path(dirname).mkdir(parents=True, exist_ok=True)
+            final_path = nomeArquivo
+        else:
+            default_dir = './imagens'
+            Path(default_dir).mkdir(parents=True, exist_ok=True)
+            final_path = os.path.join(default_dir, nomeArquivo)
+
+    print("Salvando imagem em:", final_path)
+    frame = cam.getFrameAtual()
+    # Verifica se o frame está disponível e não está vazio antes de salvar
+    if frame is None:
+        print("Aviso: frame vazio (None). Imagem não salva.")
+        return False
+    if not hasattr(frame, 'size') or frame.size == 0:
+        print("Aviso: frame vazio (size==0). Imagem não salva.")
+        return False
+
+    try:
+        ok = cv2.imwrite(final_path, frame)
+        if not ok:
+            print(f"Falha ao salvar imagem em: {final_path}")
+            return False
+    except Exception as e:
+        print(f"Erro ao salvar imagem: {e}")
+        return False
+
+    return True
+   

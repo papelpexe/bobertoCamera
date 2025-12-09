@@ -29,20 +29,21 @@ def seguidorDeLinha():
     """funcao contendo todas as outras funcoes que checam e realizam os movimentos necessarios de acordo com os perigos da pista"""
     '''
     #python3 ~/seguidorCamera/main.py
-    #funcs.verdes()
-    #funcs.intercessao()
-    #funcs.pararNoVermelhoCamera()
-    #processOpenCv.detectaPrata(camera.getFrameAtual())
-    if processOpenCv.verificaLinhaPreta(camera.getFrameAtual()):
-        print("LINHA PRETA DETECTADA")
-    sleep(1)
-    if processOpenCv.contains_silver(camera.getFrameAtual()):
-        print("PRATA DETECTADA")
+    funcs.verdes()
+    funcs.intercessao()
+    # funcs.pararNoVermelhoCamera()
+    # #processOpenCv.detectaPrata(camera.getFrameAtual())
+    # if processOpenCv.verificaLinhaPreta(camera.getFrameAtual()):
+    #     print("LINHA PRETA DETECTADA")
+    # sleep(1)
+    # if processOpenCv.contains_silver(camera.getFrameAtual()):
+    #     print("PRATA DETECTADA")
     #segue linha continua
-    #mov.pid() 
-    '''
-
+    mov.pid() '''
+    for i in range(5):
+        processOpenCv.salvaImagem(f"frame_teste_{random.randint(0,1000)}.png", "Imagens")
     
+
 
 threadRunning = False
 def main():
