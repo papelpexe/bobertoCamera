@@ -28,17 +28,17 @@ import processOpenCv
 def seguidorDeLinha():
     """funcao contendo todas as outras funcoes que checam e realizam os movimentos necessarios de acordo com os perigos da pista"""
     #python3 ~/seguidorCamera/main.py
-    #funcs.verdes()
-    #funcs.intercessao()
-    funcs.pararNoVermelhoCamera()
-    #processOpenCv.detectaPrata(camera.getFrameAtual())
-    if processOpenCv.verificaLinhaPreta(camera.getFrameAtual()):
-        print("LINHA PRETA DETECTADA")
-    sleep(1)
-    if processOpenCv.contains_silver(camera.getFrameAtual()):
-        print("PRATA DETECTADA")
+    funcs.verdes()
+    funcs.intercessao()
+    # funcs.pararNoVermelhoCamera()
+    # #processOpenCv.detectaPrata(camera.getFrameAtual())
+    # if processOpenCv.verificaLinhaPreta(camera.getFrameAtual()):
+    #     print("LINHA PRETA DETECTADA")
+    # sleep(1)
+    # if processOpenCv.contains_silver(camera.getFrameAtual()):
+    #     print("PRATA DETECTADA")
     #segue linha continua
-    #mov.pid() 
+    mov.pid() 
 
 threadRunning = False
 def main():
@@ -69,6 +69,7 @@ def main():
             # ser.m.atualiza_servos() ## joga o servos na posicao correta, para remediar os espasmos
 
             seguidorDeLinha()
+            # print(defs.giroscopio.le_angulo_x())
             # mov.m.velocidade_motores_4x4(50,50)
             # mov.reto(10)
             # sleep(1)

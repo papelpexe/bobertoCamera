@@ -17,15 +17,15 @@ import threading
 import ctypes
 
 motores = Motores(True)
-motores.direcao_motor(2, motores.INVERTIDO)
-motores.direcao_motor(1, motores.NORMAL)
+motores.direcao_motor(2, motores.NORMAL)
+motores.direcao_motor(1, motores.INVERTIDO)
 # motores.modoFreio(motores.HOLD)
 
 motores.pid_motor(3,3,3)
 
-sensorCor = CorReflexao(Portas.SERIAL1)
+sensorCor = CorReflexao(Portas.SERIAL2)
 # #placaMuxLaser = PlacaMuxVl53l0x(Portas.SERIAL3)
-giroscopio = Giroscopio(Portas.SERIAL4)
+giroscopio = Giroscopio(Portas.SERIAL1)
 # #placaMuxCor = PlacaMuxTCS34725(Portas.SERIAL4)
 
 velocidadeMotor1 = 80
