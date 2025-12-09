@@ -25,7 +25,7 @@ motores.pid_motor(3,3,3)
 
 sensorCor = CorReflexao(Portas.SERIAL1)
 # #placaMuxLaser = PlacaMuxVl53l0x(Portas.SERIAL3)
-giroscopio = Giroscopio(Portas.SERIAL4)
+#giroscopio = Giroscopio(Portas.SERIAL4)
 # #placaMuxCor = PlacaMuxTCS34725(Portas.SERIAL4)
 
 velocidadeMotor1 = 80

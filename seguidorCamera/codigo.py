@@ -27,10 +27,11 @@ import processOpenCv
 
 def seguidorDeLinha():
     """funcao contendo todas as outras funcoes que checam e realizam os movimentos necessarios de acordo com os perigos da pista"""
+    '''
     #python3 ~/seguidorCamera/main.py
     #funcs.verdes()
     #funcs.intercessao()
-    funcs.pararNoVermelhoCamera()
+    #funcs.pararNoVermelhoCamera()
     #processOpenCv.detectaPrata(camera.getFrameAtual())
     if processOpenCv.verificaLinhaPreta(camera.getFrameAtual()):
         print("LINHA PRETA DETECTADA")
@@ -39,6 +40,9 @@ def seguidorDeLinha():
         print("PRATA DETECTADA")
     #segue linha continua
     #mov.pid() 
+    '''
+
+    
 
 threadRunning = False
 def main():
