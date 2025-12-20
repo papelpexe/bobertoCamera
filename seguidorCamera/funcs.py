@@ -40,10 +40,10 @@ def intercessao():
         gapCamera()
 
 def gapCamera():
-    mov.retoGraus(cm=30, cond=pcv2.verificaLinhaPreta(cam.getFrameAtual()))
+    mov.retoGraus(cm = 30, cond = pcv2.verificaLinhaPreta(cam.getFrameAtual()))
     if pcv2.verificaIntercessao(cam.getFrameAtual()) == 'gap':
         print("Gap errado, voltando")
-        mov.retoGraus(cm=-40, cond=pcv2.verificaLinhaPreta(cam.getFrameAtual()))
+        mov.retoGraus(cm = 40, direc = TRAS, cond = pcv2.verificaLinhaPreta(cam.getFrameAtual()))
         
       
 
@@ -73,84 +73,6 @@ def verdes():
     elif vDir and vEsq: ##180
         mov.girarGraus(ESQ, 180)
         mov.girarGraus(ESQ, 20, cond = con.vendoPreto)
-
-
-def gap(): ## TEM QUE FAZER A VARREDURA DPS
-
-    if cr.fezGap.tempo() > 3000:
-        const.contadorGap = 0
-
-    if con.tudoBranco():
-        # mov.reto(3, conds = [con.viuMeioPreto])
-
-        if cr.VerdeEs.tempo() < cr.VerdeDir.tempo():
-            mov.girarGraus(ESQ, 90, conds = [con.viuPreto, con.viuVermelho])
-            if con.tudoBranco():
-                mov.girarGraus(DIR, 180, conds = [con.viuPreto, con.viuVermelho])
-                if con.tudoBranco(): mov.girarGraus(ESQ, 90, conds = [con.viuPreto, con.viuVermelho])
-        elif cr.VerdeEs.tempo() > cr.VerdeDir.tempo():
-            mov.girarGraus(DIR, 90, conds = [con.viuPreto, con.viuVermelho])
-            if con.tudoBranco(): 
-                mov.girarGraus(ESQ, 180, conds = [con.viuPreto, con.viuVermelho])
-                if con.tudoBranco(): mov.girarGraus(DIR, 90, conds = [con.viuPreto, con.viuVermelho])
-        
-
-        if con.viuPreto() == False:
-
-            print("confere gap")
-            mov.reto(13, conds = [con.meioBrancoFalso, con.viuVermelho])
-
-            if con.meioBranco():
-                print("gap falso, se perdeu")
-                const.contadorGap += 1
-                cr.fezGap.reseta()
-                mov.reto(15, TRAS, vb = 70, conds = [con.meioBrancoFalso, con.parachoqueApertadoTras, con.viuVermelho])
-                mov.pidPorDistancia(3, TRAS, conds = [con.parachoqueApertadoTras, con.viuVermelho])
-                # if con.meioBrancoFalso() == False:
-                #     mov.reto(4, TRAS)
-                # if 
-                #     mov.girarGraus(DIR, 5)
-                # elif sensor.erro_pid() < -20:
-                #     mov.girarGraus(ESQ, 5)
-        
-            else: 
-                print("gap verdadeiro")
-                const.contadorGap = 0
-
-    
-def pararNoVermelho():
-    if con.viuVermelho():
-        print(sensor.leHSVtodos())
-        mov.m.modoFreio_(1)
-        mov.m.paraMotores()
-        sleep(0.3)
-        mov.m.modoFreio_(0)
-
-        validarVermelho = True
-
-        if not(con.viuVermelho()):
-            mov.reto(1, FRENTE, 10, cond = con.viuVermelho)
-            mov.reto(3, TRAS, 10, cond = con.viuVermelho)
-            mov.motores.paraMotores()
-        print("viu vermelho")
-        
-        esperaVermelho = cr.Cronometro()
-        esperaVermelho.reseta()
-        while esperaVermelho.tempo() < 1500:
-            if not(con.viuVermelho()):
-                validarVermelho = False
-                print("falso vermelho")
-                break
-
-        if validarVermelho == True:
-            mov.motores.paraMotores()
-            print("finalizou a pista")
-            while True:
-                if (tcl.botaoPressionado(Teclado.CIMA)): 
-                    sleep(0.2) 
-                    break
-                pass
-
 
 esperaRampa = cr.Cronometro()
 esperaRampa.inicia()
@@ -309,37 +231,6 @@ def obstaculo(): ### TEM QUE SER REPENSADO
             #         break
             mov.reto(10, TRAS, 20, cond = con.parachoqueApertadoTras)
             print("finalizou obst")
-
-
-esperaRedutor = False
-def motoresTravados():
-    global esperaRedutor
-
-    if cr.motorEsquerdoTravado.tempo() > 600:
-        print("motorEsquerdo travado")
-        # mov.m.velocidadeMotor(1, 30)
-        # mov.reto(4)
-        esperaRedutor = True
-
-    if cr.motorDireitoTravado.tempo() > 600:
-        print("motorDireito travado")
-        # mov.m.velocidadeMotor(2, 30)
-        # mov.reto(4)
-        esperaRedutor = True
-    # sleep(1)
-
-    if esperaRedutor:
-        print("passando redutor")
-        while cr.motorEsquerdoTravado.tempo() > 600 or cr.motorDireitoTravado.tempo() > 600:
-            mov.m.velocidadeMotores(60, 60)
-            pass
-        print("passou do redutor")
-
-    esperaRedutor = False
-
-
-
-
 
 def pararNoVermelhoCamera():
     if pcv2.verVermelho(cam.getFrameAtual()):
