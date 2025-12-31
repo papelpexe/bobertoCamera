@@ -20,8 +20,10 @@ def init_camera():
     try:
         # Try multiple camera indices to be more robust (0..4)
         for idx in range(0, 5):
+
             logger.info(f"Tentando abrir câmera no índice {idx}...")
             camera = cv2.VideoCapture(idx)
+            
             if camera is not None and camera.isOpened():
                 logger.info(f"Camera aberta no índice {idx}")
                 # Configure camera properties
