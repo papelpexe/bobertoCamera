@@ -21,13 +21,13 @@ import sys
 import ctypes
 
 import area
-import camera
+import camera as cam
 import processOpenCv
 
 
 def seguidorDeLinha():
     """funcao contendo todas as outras funcoes que checam e realizam os movimentos necessarios de acordo com os perigos da pista"""
-    '''
+
     #python3 ~/seguidorCamera/main.py
     funcs.verdes()
     funcs.intercessao()
@@ -39,9 +39,9 @@ def seguidorDeLinha():
     # if processOpenCv.contains_silver(camera.getFrameAtual()):
     #     print("PRATA DETECTADA")
     #segue linha continua
-    mov.pid() '''
-    for i in range(5):
-        processOpenCv.salvaImagem(f"frame_teste_{random.randint(0,1000)}.png", "Imagens")
+    mov.pid()
+    # for i in range(5):
+    #     processOpenCv.salvaImagem(f"frame_teste_{random.randint(0,1000)}.png", "Imagens")
     
 
 
@@ -66,19 +66,30 @@ def main():
     tela.escreve("MAIN", 0)
 
     try:
+        # giroscopio.calibra()
         while True:
             #VERIFICAÇÃO NO LOOP PRINCIPAL (obrigatória)
             if defs.thread_controller.stop_requested:
                 raise defs.ThreadStopSignal("Parada solicitada no loop principal")
             
             # ser.m.atualiza_servos() ## joga o servos na posicao correta, para remediar os espasmos
-
             seguidorDeLinha()
+
+            # print(giroscopio.le_angulo_z())
+            # mov.m.velocidade_motores_4x4(100,100)
+            # sleep(4)
             # mov.m.velocidade_motores_4x4(50,50)
+            # sleep(4)    
+            # mov.m.velocidade_motores_4x4(-50,-50)
+            # sleep(4)
+            # mov.m.velocidade_motores_4x4(-100,-100)
+            # sleep(4)
+
             # mov.reto(10)
             # sleep(1)
             # mov.reto(10,const.TRAS)
             # sleep(1)
+        
 
            
     except defs.ThreadStopSignal:
@@ -88,6 +99,8 @@ def main():
     finally:
         # Limpeza garantida
         debug.piscarLed(1)
+        mov.m.set_modo_freio(1)
         mov.m.para_motores()
+        mov.m.set_modo_freio(0)
         flagThreadMorreu = True
         print("Thread main finalizada com segurança!")

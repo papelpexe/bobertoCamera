@@ -65,24 +65,6 @@ class Motores:
         if self.atualiza_instantaneo:
             self.atualiza_servos()
 
-    def move_servos(self, servo1, servo2, angulo1, angulo2):
-        if servo1 <= 0:
-            return
-        if servo1 > 6:
-            return
-        angulo = max(angulo1, 0)
-        angulo = min(angulo1, 180)
-        self.lista_servos[servo1] = angulo
-        if servo2 <= 0:
-            return
-        if servo2 > 6:
-            return
-        angulo = max(angulo2, 0)
-        angulo = min(angulo2, 180)
-        self.lista_servos[servo2] = angulo
-        if self.atualiza_instantaneo:
-            self.atualiza_servos()
-
     def atualiza_servos(self):
         self.ser.reset_input_buffer()
         self.ser.reset_output_buffer()
@@ -124,7 +106,8 @@ class Motores:
                 self.angulo_absoluto_motor2 = struct.unpack('>i', bytes(retorno_serial[5:9]))[0]
                 self.estado_motores = retorno_serial[9]
                 return True
-        # raise Exception('Erro ao ler o estado dos motores') ## PROVAVELMENTE VAI TER Q DESCOMENTAR DPS
+        # raise Exception('Erro ao ler o estado dos motores')
+        print(('Erro ao ler o estado dos motores'))
 
     # funcao que envia informacao mas sem atualizar velocidades do controlador de motor
     def estado(self):
@@ -150,7 +133,7 @@ class Motores:
                 if self.DEBUG:
                     print('Estado atualizado')
                 return True
-        # raise Exception('Erro ao ler o estado dos motores')
+        raise Exception('Erro ao ler o estado dos motores')
 
     def direcao_motor(self, motor, direcao):
         self.lista_motores[0] = self.ENVIA_MOTORES  # comando para enviar motores como velocidade
@@ -226,7 +209,6 @@ class Motores:
         angulo2 = abs(angulo2)  # sempre será positivo
         if angulo2 > 65535:
             return
-        
         motor = 1
         velocidade1 = max(velocidade1, -120)
         velocidade1 = min(velocidade1, 120)
@@ -239,19 +221,6 @@ class Motores:
         if self.motor_invertido[motor - 1]:
             velocidade2 = -velocidade2
         self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
-        motor = 3
-        velocidade1 = max(velocidade1, -120)
-        velocidade1 = min(velocidade1, 120)
-        if self.motor_invertido[motor - 1]:
-            velocidade1 = -velocidade1
-        self.lista_motores[motor] = struct.pack('b', int(velocidade1))[0]
-        motor = 4
-        velocidade2 = max(velocidade2, -120)
-        velocidade2 = min(velocidade2, 120)
-        if self.motor_invertido[motor - 1]:
-            velocidade2 = -velocidade2
-        self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
-
         self.angulo_motor1 = angulo1
         self.lista_motores[5] = (angulo1 >> 8) & 0xFF  # pego o byte mais significativo
         self.lista_motores[6] = angulo1 & 0xFF
@@ -262,15 +231,16 @@ class Motores:
             self.atualiza_motores()
             time.sleep(0.05)
 
-    def move_motores(self, velocidade1, angulo1, velocidade2, angulo2):
-        self.lista_motores[0] = self.ENVIA_MOTORES_4X4  # comando para enviar motores como velocidade 4x4
+    # Função que move os motores ao mesmo tempo
+    # velocidade1 e velocidade2 são os valores de velocidade dos motores, angulo1 e angulo2 são os angulos que os motores devem se mover, os motores sem encoder acompanham os motores com encoder
+    def move_motores_4x4(self, velocidade1, angulo1, velocidade2, angulo2):
+        self.lista_motores[0] = self.ENVIA_MOTORES_4X4  # comando para enviar motores como velocidade
         angulo1 = abs(angulo1)  # sempre será positivo
         if angulo1 > 65535:
             return
         angulo2 = abs(angulo2)  # sempre será positivo
         if angulo2 > 65535:
             return
-        
         motor = 1
         velocidade1 = max(velocidade1, -120)
         velocidade1 = min(velocidade1, 120)
@@ -283,19 +253,6 @@ class Motores:
         if self.motor_invertido[motor - 1]:
             velocidade2 = -velocidade2
         self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
-        motor = 3
-        velocidade1 = max(velocidade1, -120)
-        velocidade1 = min(velocidade1, 120)
-        if self.motor_invertido[motor - 1]:
-            velocidade1 = -velocidade1
-        self.lista_motores[motor] = struct.pack('b', int(velocidade1))[0]
-        motor = 4
-        velocidade2 = max(velocidade2, -120)
-        velocidade2 = min(velocidade2, 120)
-        if self.motor_invertido[motor - 1]:
-            velocidade2 = -velocidade2
-        self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
-
         self.angulo_motor1 = angulo1
         self.lista_motores[5] = (angulo1 >> 8) & 0xFF  # pego o byte mais significativo
         self.lista_motores[6] = angulo1 & 0xFF
@@ -305,6 +262,8 @@ class Motores:
         if self.atualiza_instantaneo:
             self.atualiza_motores()
             time.sleep(0.05)
+
+
 
     # Função que move para sempre os motores 1 e 2 ao mesmo tempo
     # velocidade1 e velocidade2 são os valores de velocidade dos motores
@@ -324,24 +283,6 @@ class Motores:
         self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
         if self.atualiza_instantaneo:
             self.atualiza_motores()
-
-    def velocidade_motores_4x4(self, potencia1, potencia2):
-        self.lista_motores[0] = self.ENVIA_MOTORES_4X4 # comando para enviar motores como potencia
-        motor = 1
-        potencia1 = max(potencia1, -100)
-        potencia1 = min(potencia1, 100)
-        if self.motor_invertido[motor - 1]:
-            potencia1 = -potencia1
-        self.lista_motores[motor] = struct.pack('b', int(potencia1))[0]
-        motor = 2
-        potencia2 = max(potencia2, -100)
-        potencia2 = min(potencia2, 100)
-        if self.motor_invertido[motor - 1]:
-            potencia2 = -potencia2
-        self.lista_motores[motor] = struct.pack('b', int(potencia2))[0]
-        if self.atualiza_instantaneo:
-            self.atualiza_motores()
-
 
     # Função que move para sempre os motores 1 e 2 ao mesmo tempo
     # potencia1 e potencia2 são os valores de potencia do pwm dos motores
@@ -381,6 +322,26 @@ class Motores:
         self.lista_motores[motor] = struct.pack('b', int(potencia2))[0]
         if self.atualiza_instantaneo:
             self.atualiza_motores()
+
+    # Função que move para sempre os motores 1 e 2 ao mesmo tempo e coloca o mesmo valor nos motores 3 e 4 internamente
+    # velocidade1 e velocidade2 são os valores de velocidade dos motores
+    def velocidade_motores_4x4(self, velocidade1, velocidade2):
+        self.lista_motores[0] = self.ENVIA_MOTORES_4X4  # comando para enviar motores como velocidade
+        motor = 1
+        velocidade1 = max(velocidade1, -100)
+        velocidade1 = min(velocidade1, 100)
+        if self.motor_invertido[motor - 1]:
+            velocidade1 = -velocidade1
+        self.lista_motores[motor] = struct.pack('b', int(velocidade1))[0]
+        motor = 2
+        velocidade2 = max(velocidade2, -100)
+        velocidade2 = min(velocidade2, 100)
+        if self.motor_invertido[motor - 1]:
+            velocidade2 = -velocidade2
+        self.lista_motores[motor] = struct.pack('b', int(velocidade2))[0]
+        if self.atualiza_instantaneo:
+            self.atualiza_motores()
+
 
     def potencia_motor(self, motor, potencia):
         self.lista_motores[0] = self.ENVIA_MOTORES_POTENCIA  # comando para enviar motores como potencia

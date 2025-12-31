@@ -21,7 +21,7 @@ kp = 0.6
 ki = 0
 kd = 1.9
 
-vb_pid = 45
+vb_pid = 65
 
 erroAnterior = 0
 integral = []
@@ -47,8 +47,8 @@ def pid():
     valor = p + i + d #variacao da potencia do motor
     # print(se.leReflexaoTodos())
 
-    valorMotorEsq = vb_pid - valor  
-    valorMotorDir = vb_pid + valor
+    valorMotorEsq = vb_pid + valor  
+    valorMotorDir = vb_pid - valor
 
 
     m.potencia_motores_4x4(valorMotorEsq, valorMotorDir)
@@ -184,7 +184,7 @@ def andaMotor(motor, cm, direc = FRENTE, vb = 50, conds = [], cronos = []):
     
 
 indiceDoReto = 7
-def reto(cm, direc = FRENTE, vb = vb_pid + 15, hold = False, cond = None, cond2 = None, conds = [], cronos = [], delta = 1.1):
+def retoAntigo(cm, direc = FRENTE, vb = vb_pid + 15, hold = True, cond = None, cond2 = None, conds = [], cronos = [], delta = 1.1):
     if hold: m.set_modo_freio(1)
     m.para_motores()
 
@@ -245,7 +245,7 @@ def reto(cm, direc = FRENTE, vb = vb_pid + 15, hold = False, cond = None, cond2 
 
 #função de andar reto com graus kp kd
 
-def retoGraus(cm, direc = FRENTE, vb = vb_pid + 15, hold = False, cond = None, cond2 = None, conds = [], cronos = [], delta = 1.1):
+def reto(cm, direc = FRENTE, vb = 100, hold = False, cond = None, cond2 = None, conds = [], cronos = []):
     if hold: m.set_modo_freio(1)
     m.para_motores()
 
@@ -307,10 +307,10 @@ def retoGraus(cm, direc = FRENTE, vb = vb_pid + 15, hold = False, cond = None, c
             p = erro * kp
             d = (erro - erroAnterior) * kd
             valor = p + d
-            valorMotorEsq=vb_pid - valor  
-            valorMotorDir=vb_pid + valor
+            valorMotorEsq=vb_pid + valor  
+            valorMotorDir=vb_pid - valor
             
-            m.velocidade_motores_4x4(valorMotorEsq, valorMotorDir)
+            m.velocidade_motores_4x4(-valorMotorEsq, -valorMotorDir)
             erroAnterior = erro
 
         if direc == FRENTE:
@@ -320,6 +320,7 @@ def retoGraus(cm, direc = FRENTE, vb = vb_pid + 15, hold = False, cond = None, c
             if (anguloEsq - quant >= m.angulo_motor(1)) and (anguloDir - quant >= m.angulo_motor(2)):
                 break
         counter += 1
+        print(m.angulo_motor(1), m.angulo_motor(2))
         if cr.espera.tempo() > 10000: 
             print("tempo demais no loop do reto")
             break
@@ -328,9 +329,9 @@ def retoGraus(cm, direc = FRENTE, vb = vb_pid + 15, hold = False, cond = None, c
     # print("numero de loops do reto: ", counter)
         
     m.para_motores()
-    m.set_modo_freio(0)
+    # m.set_modo_freio(0)
 
-def girarGraus(direc, graus, vb = vb_pid + 35, cond = None, cond2 = None, conds = [], cronos = [], delta = 0, hold = False):
+def girarGraus(direc, graus, vb = 100, cond = None, cond2 = None, conds = [], cronos = [], delta = 0, hold = False):
     if hold == True: 
         m.set_modo_freio(1)
     m.para_motores()
@@ -346,13 +347,13 @@ def girarGraus(direc, graus, vb = vb_pid + 35, cond = None, cond2 = None, conds 
     while graus > abs(giroscopio.le_angulo_z()):
         # cr.reset()
         # print(angFinal, giroscopio.leAnguloZ())
-        if direc == ESQ:
+        if direc == DIR:
             if graus*0.8 < abs(giroscopio.le_angulo_z()):
                 m.velocidade_motores_4x4(2*vb/3, -2*vb/3 - delta)
 
             else: m.velocidade_motores_4x4(vb, -vb - delta)
 
-        elif direc == DIR:
+        elif direc == ESQ:
             if graus*0.8 < abs(giroscopio.le_angulo_z()):
                 m.velocidade_motores_4x4(-2*vb/3, 2*vb/3 - delta)
 
@@ -383,9 +384,7 @@ def girarGraus(direc, graus, vb = vb_pid + 35, cond = None, cond2 = None, conds 
     m.set_modo_freio(0)
     # print(giroscopio.leAnguloZ())
 
-
-
-def curvarGraus(direc, graus, vb = vb_pid + 25, cond = None, cond2 = None, conds = [], cronos = [], delta = 0, hold = False):
+def curvarGraus(direc, graus, vb = 100, cond = None, cond2 = None, conds = [], cronos = [], delta = 0, hold = False):
     if hold == True: 
         m.set_modo_freio(1)
     m.para_motores()
@@ -397,7 +396,7 @@ def curvarGraus(direc, graus, vb = vb_pid + 25, cond = None, cond2 = None, conds
     giroscopio.reseta_z()
     giroscopio.reseta_z()
     para = False
-    ind = 10
+
 
     print('iniciou curva')
 
@@ -406,15 +405,15 @@ def curvarGraus(direc, graus, vb = vb_pid + 25, cond = None, cond2 = None, conds
         # print(angFinal, giroscopio.leAnguloZ())
         if direc == ESQ:
             if graus*0.8 < abs(giroscopio.le_angulo_z()):
-                m.velocidade_motores_4x4(vb - ind, -vb/3 - ind - delta)
+                m.velocidade_motores_4x4(vb, int(vb/5))
 
-            else: m.velocidade_motores_4x4(vb, -vb/3 - delta)
+            else: m.velocidade_motores_4x4(vb, int(vb/5))
 
         elif direc == DIR:
             if graus*0.8 < abs(giroscopio.le_angulo_z()):
-                m.velocidade_motores_4x4(-vb/3 - ind, vb - ind - delta)
+                m.velocidade_motores_4x4(int(vb/5), vb)
 
-            else: m.velocidade_motores_4x4(-vb/3, vb - delta)
+            else: m.velocidade_motores_4x4(int(vb/5), vb)
 
         if cond and cond():  
             print("pegou cond do giro")

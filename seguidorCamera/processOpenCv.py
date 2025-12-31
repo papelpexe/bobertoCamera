@@ -41,7 +41,7 @@ def seguidor_centro(img):
         error = 0  # Linha não encontrada
     return error
 
-def verificaLinhaPreta(img):
+def verificaLinhaPreta(img = cam.getFrameAtual()):
     """Verifica se existe uma linha preta na imagem, retornando True ou False."""
     if img is None: return False; print("frame nulo")
     frame = img
@@ -78,7 +78,7 @@ def verificaIntercessao(img):
     # Processamento - criar binary para processamento
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    _, binary = cv2.threshold(blur, 100 , 255, cv2.THRESH_BINARY_INV)
+    _, binary = cv2.threshold(blur, 84, 255, cv2.THRESH_BINARY_INV)
     
     # Criar imagem colorida para visualização
     visualizacao = cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
@@ -217,6 +217,8 @@ def checarVerdes(img):
     frame_com_contornos = frame.copy()
 
     # Processamento - criar binary para processamento
+    # frameMenor = frame[int(fheight * 2/10):int(fheight * 8/10), int(fwidth * 2/10):int(fwidth * 8/10)]
+    # hsv = cv2.cvtColor(frameMenor, cv2.COLOR_BGR2HSV)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
    
     valorBaixoVerde = np.array([40, 80, 70])
@@ -238,7 +240,7 @@ def checarVerdes(img):
     for i, cnt in enumerate(contoursVerde):
         area = cv2.contourArea(cnt)
         x, y, w, h = cv2.boundingRect(cnt)
-        meio = int(h/2)
+        meio = int(y + h/2)
         deltaH = 80
         
         if area > 100:
@@ -298,13 +300,17 @@ def checarVerdes(img):
                     bools.append(False)
             
             verde_mov = "verde falso"
-            if bools[0] == True and bools[1]==True:
-                if bools[2] and not bools[3]:
-                    verde_mov= "verde dir"
-                elif bools[3] and not bools[2]:
-                    verde_mov= "verde esq"
-
-            
+            if bools[0] == True and bools[1] == True: 
+                if int(fheight * 2/10) < meio < int(fheight * 8/10):
+                    if bools[2] and not bools[3]:
+                        verde_mov= "verde dir"
+                    elif bools[3] and not bools[2]:
+                        verde_mov= "verde esq"
+                else:
+                    if bools[2] and not bools[3]:
+                        verde_mov= "verde dir fora"
+                    elif bools[3] and not bools[2]:
+                        verde_mov= "verde esq fora"
 
             # Adiciona texto com o resultado da detecção
             cv2.putText(frame_com_contornos, verde_mov, (x, y+h+20), 
@@ -409,7 +415,7 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     - min_area_threshold: ignora contornos menores que esse valor
     - decision_area_threshold: limiar de área para considerar "vermelho"
     """
-    print("Analisando vermelho")
+    # print("Analisando vermelho")
     img = freme.copy()
 
     # Tratamento morfológico
@@ -469,7 +475,7 @@ def verVermelho(freme, min_area_threshold=50, decision_area_threshold=1000):
     # Decisão: True se a maior área exceder o limiar de decisão
     resultado = maior_area > decision_area_threshold
 
-    cam.frameProcessado = frame_com_contornos
+    # cam.frameProcessado = frame_com_contornos
     
 
     return resultado#, int(maior_area), frame_com_contornos
