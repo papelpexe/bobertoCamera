@@ -59,14 +59,14 @@ def verdes():
                 vEsq = True
 
     if vEsq and not vDir: ##verde na esquerda
-        mov.reto(5)
+        mov.reto(2)
         sleep(0.2)
         mov.girarGraus(ESQ, 40)
         mov.girarGraus(ESQ, 60, cond = con.vendoPreto)
         # mov.reto(andada, TRAS)
 
     elif vDir and not vEsq: ##verde na direita
-        mov.reto(5)
+        mov.reto(2)
         sleep(0.2)
         mov.girarGraus(DIR, 40)
         mov.girarGraus(DIR, 60, cond = con.vendoPreto)

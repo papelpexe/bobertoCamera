@@ -301,7 +301,7 @@ def checarVerdes(img):
             
             verde_mov = "verde falso"
             if bools[0] == True and bools[1] == True: 
-                if int(fheight * 2/10) < meio < int(fheight * 8/10):
+                if int(fheight * 1/10) < meio < int(fheight * 7/10):
                     if bools[2] and not bools[3]:
                         verde_mov= "verde dir"
                     elif bools[3] and not bools[2]:

@@ -28,7 +28,7 @@ import processOpenCv
 def seguidorDeLinha():
     """funcao contendo todas as outras funcoes que checam e realizam os movimentos necessarios de acordo com os perigos da pista"""
 
-    #python3 ~/seguidorCamera/main.py
+    # #python3 ~/seguidorCamera/main.py
     funcs.verdes()
     funcs.intercessao()
     # funcs.pararNoVermelhoCamera()
@@ -67,6 +67,7 @@ def main():
 
     try:
         # giroscopio.calibra()
+        r=g=b=0
         while True:
             #VERIFICAÇÃO NO LOOP PRINCIPAL (obrigatória)
             if defs.thread_controller.stop_requested:
@@ -74,6 +75,7 @@ def main():
             
             # ser.m.atualiza_servos() ## joga o servos na posicao correta, para remediar os espasmos
             seguidorDeLinha()
+            motores.set_led_rgb_all(180,180,180)
 
             # print(giroscopio.le_angulo_z())
             # mov.m.velocidade_motores_4x4(100,100)
@@ -89,7 +91,16 @@ def main():
             # sleep(1)
             # mov.reto(10,const.TRAS)
             # sleep(1)
-        
+
+            # cam.frameProcessado = cam.frame
+
+            # r=b=g=g+10
+            # if g>255:
+            #     g=0
+            #     r=0
+            #     b=0
+            
+            # sleep(0.1)
 
            
     except defs.ThreadStopSignal:
