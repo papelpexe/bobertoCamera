@@ -22,7 +22,7 @@ import ctypes
 
 import area
 import camera as cam
-import processOpenCv
+import processOpenCv as pcv2
 
 
 def seguidorDeLinha():
@@ -62,7 +62,7 @@ def main():
     const.contadorGap = 0
 
     sleep(1)
-  
+
     tela.escreve("MAIN", 0)
 
     try:
@@ -74,8 +74,10 @@ def main():
                 raise defs.ThreadStopSignal("Parada solicitada no loop principal")
             
             # ser.m.atualiza_servos() ## joga o servos na posicao correta, para remediar os espasmos
-            seguidorDeLinha()
-            motores.set_led_rgb_all(180,180,180)
+            # seguidorDeLinha()
+            val = 255
+            motores.set_led_rgb_all(val,val,val)
+            vdetectados = pcv2.checarVerdes(cam.getFrameAtual())
 
             # print(giroscopio.le_angulo_z())
             # mov.m.velocidade_motores_4x4(100,100)

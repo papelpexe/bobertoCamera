@@ -214,18 +214,20 @@ def checarVerdes(img):
     fheight, fwidth, _ = frame.shape
     
     # Cria uma cópia da imagem para desenhar os contornos
-    frame_com_contornos = frame.copy()
+    krn = 11
+    frameblur = cv2.GaussianBlur(frame, (krn,krn), 0)
+    frame_com_contornos = frameblur.copy()
 
     # Processamento - criar binary para processamento
     # frameMenor = frame[int(fheight * 2/10):int(fheight * 8/10), int(fwidth * 2/10):int(fwidth * 8/10)]
     # hsv = cv2.cvtColor(frameMenor, cv2.COLOR_BGR2HSV)
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frameblur, cv2.COLOR_BGR2HSV)
    
-    valorBaixoVerde = np.array([40, 80, 70])
+    valorBaixoVerde = np.array([40, 150, 70])
     valorAltoVerde = np.array([80, 255, 235])
 
     valorBaixoPreto = np.array([0, 0, 0])
-    valorAltoPreto = np.array([255, 50, 50])
+    valorAltoPreto = np.array([180, 25, 15])
 
     maskVerde = cv2.inRange(hsv, valorBaixoVerde, valorAltoVerde)
     

@@ -415,7 +415,7 @@ class Motores:
         if len(retorno_serial) == 1:
             if retorno_serial[0] == self.ENVIA_PID:
                 return True
-        raise Exception('Erro ao enviar dados do PID')
+        # raise Exception('Erro ao enviar dados do PID')
 
     def reseta_angulo_motor(self, motor):  # nao reseto o angulo diretalmente na placa, apenas crio uma diferença
         if motor == 1:

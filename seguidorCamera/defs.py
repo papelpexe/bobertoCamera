@@ -23,7 +23,7 @@ motores.direcao_motor(1, motores.INVERTIDO)
 
 motores.pid_motor(3,10,0)
 
-sensorCor = CorReflexao(Portas.SERIAL1)
+sensorCor = CorReflexao(Portas.SERIAL5)
 # #placaMuxLaser = PlacaMuxVl53l0x(Portas.SERIAL3)
 giroscopio = Giroscopio(Portas.SERIAL4)
 # #placaMuxCor = PlacaMuxTCS34725(Portas.SERIAL4)
