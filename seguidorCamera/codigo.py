@@ -74,10 +74,10 @@ def main():
                 raise defs.ThreadStopSignal("Parada solicitada no loop principal")
             
             # ser.m.atualiza_servos() ## joga o servos na posicao correta, para remediar os espasmos
-            # seguidorDeLinha()
+            seguidorDeLinha()
             val = 255
             motores.set_led_rgb_all(val,val,val)
-            vdetectados = pcv2.checarVerdes(cam.getFrameAtual())
+            # vdetectados = pcv2.checarVerdes(cam.getFrameAtual())
 
             # print(giroscopio.le_angulo_z())
             # mov.m.velocidade_motores_4x4(100,100)

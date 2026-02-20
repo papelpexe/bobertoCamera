@@ -214,7 +214,7 @@ def checarVerdes(img):
     fheight, fwidth, _ = frame.shape
     
     # Cria uma cópia da imagem para desenhar os contornos
-    krn = 11
+    krn = 15
     frameblur = cv2.GaussianBlur(frame, (krn,krn), 0)
     frame_com_contornos = frameblur.copy()
 
@@ -227,11 +227,11 @@ def checarVerdes(img):
     valorAltoVerde = np.array([80, 255, 235])
 
     valorBaixoPreto = np.array([0, 0, 0])
-    valorAltoPreto = np.array([180, 25, 15])
+    valorAltoPreto = np.array([180, 35, 27])
 
     maskVerde = cv2.inRange(hsv, valorBaixoVerde, valorAltoVerde)
     
-    kernel = np.ones((10,10), np.uint8)
+    kernel = np.ones((krn,krn), np.uint8)
     maskVerdeK = cv2.morphologyEx(maskVerde, cv2.MORPH_CLOSE, kernel)
 
     contoursVerde, _ = cv2.findContours(maskVerdeK, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
