@@ -17,7 +17,7 @@ motorEsquerdoTravado = False
 motorDireitoTravado = False
 #motor esquerdo vai ser o 1 e o direito o 2
 
-kp = 0.7
+kp = 0.75
 ki = 0
 kd = 1.9
 

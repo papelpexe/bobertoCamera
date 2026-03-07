@@ -15,51 +15,71 @@ torch.set_num_threads(4)
 
 app = Flask(__name__)
 
-# Initialize camera with error handling
-def init_camera():
-    try:
-        # Try multiple camera indices to be more robust (0..4)
-        for idx in range(0, 5):
-            logger.info(f"Tentando abrir câmera no índice {idx}...")
-            camera = cv2.VideoCapture(idx)
-            if camera is not None and camera.isOpened():
-                logger.info(f"Camera aberta no índice {idx}")
-                # Configure camera properties
-                try:
-                    camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-                    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-                    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-                    camera.set(cv2.CAP_PROP_FPS, 30)
-                except Exception:
-                    # Ignore property set failures
-                    pass
-                return camera
-            else:
-                logger.warning(f"Índice {idx} não disponível")
-
-        logger.error("Nenhuma câmera disponível nos índices testados (0-4)")
-        return None
-    except Exception as e:
-        logger.error(f"Error initializing camera: {e}")
-        return None
-
-camera = init_camera()
-
 # Shared variables with proper initialization
 frame: Optional[np.ndarray] = None
+frameBack: Optional[np.ndarray] = None
 frameProcessado: Optional[np.ndarray] = None
+frameProcessadoBack: Optional[np.ndarray] = None
 lock = threading.Lock()
 objetos_detectados: List[Any] = []
+kframe = None
+
+# # Initialize camera with error handling
+# def init_camera():
+#     try:
+#         # Try multiple camera indices to be more robust (0..4)
+#         for idx in range(0, 5):
+#             logger.info(f"Tentando abrir câmera no índice {idx}...")
+#             camera = cv2.VideoCapture(idx)
+#             if camera is not None and camera.isOpened():
+#                 logger.info(f"Camera aberta no índice {idx}")
+#                 # Configure camera properties
+#                 try:
+#                     camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+#                     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+#                     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+#                     camera.set(cv2.CAP_PROP_FPS, 30)
+#                 except Exception:
+#                     # Ignore property set failures
+#                     pass
+#                 return camera
+#             else:
+#                 logger.warning(f"Índice {idx} não disponível")
+
+#         logger.error("Nenhuma câmera disponível nos índices testados (0-4)")
+#         return None
+#     except Exception as e:
+#         logger.error(f"Error initializing camera: {e}")
+#         return None
+
+# camera = init_camera()
+cameraFront = cv2.VideoCapture(1)
+cameraBack = cv2.VideoCapture(3)
+
+camWidth = 160
+camHeight = 120
+
+cameraFront.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+cameraFront.set(cv2.CAP_PROP_FRAME_WIDTH, camWidth)
+cameraFront.set(cv2.CAP_PROP_FRAME_HEIGHT, camHeight)
+cameraFront.set(cv2.CAP_PROP_FPS, 30)
+
+cameraBack.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+cameraBack.set(cv2.CAP_PROP_FRAME_WIDTH, camWidth)
+cameraBack.set(cv2.CAP_PROP_FRAME_HEIGHT, camHeight)
+cameraBack.set(cv2.CAP_PROP_FPS, 30)
+
 
 # MJPEG Streaming
-def atualizaTransmissao():
+def atualizaTransmissaoFront():
     global frameProcessado, frame
     
     while True:
         with lock:
-            if frameProcessado is None:
-                time.sleep(0.1)
-                continue
+            
+            # if frameProcessado is None:
+            #     time.sleep(0.1)
+            #     continue
             
             # Encode frame to JPEG
             ret, buffer = cv2.imencode('.jpg', frameProcessado, 
@@ -72,37 +92,64 @@ def atualizaTransmissao():
         
         time.sleep(0.033)  # ~30 FPS
 
-@app.route('/video')
+def atualizaTransmissaoBack():
+    global frameProcessado, frameBack, frameProcessadoBack
+    
+    while True:
+        with lock:
+            
+            # if frameProcessado is None:s
+            #     time.sleep(0.1)
+            #     continue
+            
+            # Encode frame to JPEG
+            ret, buffer = cv2.imencode('.jpg', frameBack, 
+                                     [cv2.IMWRITE_JPEG_QUALITY, 160])
+        
+        if ret:
+            frame_bytes = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+        
+        time.sleep(0.033)  # ~30 FPS
+
+@app.route('/')
+def index():
+    return '<h1>IMAGENS malucas</h1> <img src="/videoFront" width="640">  <img src="/videoBack" width="640">'
+
+@app.route('/videoFront')
 def video_feed():
-    return Response(atualizaTransmissao(),
+    return Response(atualizaTransmissaoFront(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/health')
-def health_check():
-    status = camera is not None and camera.isOpened()
-    logger.info(f"Health check: {status}")
-    return {'status': 'ok', 'camera_available': status}
+@app.route('/videoBack')
+def video_feedBack():
+    return Response(atualizaTransmissaoBack(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def vercamera():
-    global frame, frameProcessado, camera
+    global frame, frameProcessado, frameProcessadoBack, cameraFront, cameraBack, frameBack
     
-    if camera is None or not camera.isOpened():
-        logger.warning('Camera not available - tentando reiniciar')
-        # tenta reiniciar a câmera (com backoff curto)
-        camera = init_camera()
-        time.sleep(0.5)
-        return
+    # if cameraFr is None or not camera.isOpened():
+    #     logger.warning('Camera not available - tentando reiniciar')
+    #     # tenta reiniciar a câmera (com backoff curto)
+    #     # camera = init_camera()
+    #     # time.sleep(0.5)
+    #     return
 
-    ret, captured_frame = camera.read()
-    if not ret or captured_frame is None or getattr(captured_frame, 'size', 0) == 0:
-        logger.debug('Leitura da câmera falhou (ret False ou frame vazio)')
-        return
+    retFront, captured_frameFront = cameraFront.read()
+    retBack, captured_frameBack = cameraBack.read()
+    # if not ret or captured_frame is None or getattr(captured_frame, 'size', 0) == 0:
+    #     logger.debug('Leitura da câmera falhou (ret False ou frame vazio)')
+    #     return
 
     with lock:
-        frame = captured_frame.copy()
+        frame = captured_frameFront.copy()
+        frameBack = captured_frameBack.copy()
         # Initialize frameProcessado if it's None
         if frameProcessado is None:
-            frameProcessado = captured_frame.copy()
+            frameProcessado = captured_frameFront.copy()
+            frameProcessadoBack = captured_frameBack.copy()
 
 def thread_camera():
     logger.info("Camera thread started")
@@ -147,8 +194,9 @@ def iniciar_flask():
 # Cleanup function
 def cleanup():
     logger.info("Cleaning up resources")
-    if camera is not None:
-        camera.release()
+    if cameraFront is not None and cameraBack is not None:
+        cameraFront.release()
+        cameraBack.release()
     cv2.destroyAllWindows()
 
 # Register cleanup on exit
