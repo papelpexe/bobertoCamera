@@ -4,6 +4,8 @@ import constantes as const
 import threading
 from time import sleep
 from defs import teclado as tcl
+import processOpenCv as pcv2
+import camera as cam
 
 
 relogio = Cronometro("tempo") ## MEDE O TEMPO DE EXECUCAO DO ROBO
@@ -115,35 +117,53 @@ def pretoCronometros():
 def reset():
     ##reset dos cronometros, pra mostrar quanto tempo faz des de o ultimo momento em que eles viram algo
     # print(sensor.leHSVdir())
-    if sensor.checarCorHSV(sensor.leHSVdir()) == const.VERDE: VerdeDir.reseta(); tcl.alteraLed(2, 1); print("reset verde dir")
-    else: tcl.alteraLed(2, 0)
-    if sensor.checarCorHSV(sensor.leHSVmeio()) == const.VERDE: VerdeMeio.reseta(); tcl.alteraLed(2, 1); print("reset verde meio")
-    else: tcl.alteraLed(2, 0)
-    if sensor.checarCorHSV(sensor.leHSVesq()) == const.VERDE: VerdeEs.reseta(); tcl.alteraLed(2, 1); print("reset verde esq")
-    else: tcl.alteraLed(2, 0)
+    # if sensor.checarCorHSV(sensor.leHSVdir()) == const.VERDE: VerdeDir.reseta(); tcl.alteraLed(2, 1); print("reset verde dir")
+    # else: tcl.alteraLed(2, 0)
+    # if sensor.checarCorHSV(sensor.leHSVmeio()) == const.VERDE: VerdeMeio.reseta(); tcl.alteraLed(2, 1); print("reset verde meio")
+    # else: tcl.alteraLed(2, 0)
+    # if sensor.checarCorHSV(sensor.leHSVesq()) == const.VERDE: VerdeEs.reseta(); tcl.alteraLed(2, 1); print("reset verde esq")
+    # else: tcl.alteraLed(2, 0)
 
-    if sensor.checarCorHSV(sensor.leHSVdir()) == const.VERMELHO: VermDir.reseta()
-    if sensor.checarCorHSV(sensor.leHSVmeio()) == const.VERMELHO: VermMeio.reseta()
-    if sensor.checarCorHSV(sensor.leHSVesq()) == const.VERMELHO: VermEs.reseta()
+    # if sensor.checarCorHSV(sensor.leHSVdir()) == const.VERMELHO: VermDir.reseta()
+    # if sensor.checarCorHSV(sensor.leHSVmeio()) == const.VERMELHO: VermMeio.reseta()
+    # if sensor.checarCorHSV(sensor.leHSVesq()) == const.VERMELHO: VermEs.reseta()
 
-    if sensor.checarCorRGBC(sensor.leRGBCdir()) == const.PRATA: PrataDir.reseta()
-    if sensor.checarCorRGBC(sensor.leRGBCmeio()) == const.PRATA: PrataMeio.reseta()
-    if sensor.checarCorRGBC(sensor.leRGBCesq()) == const.PRATA: PrataEs.reseta()
+    # if sensor.checarCorRGBC(sensor.leRGBCdir()) == const.PRATA: PrataDir.reseta()
+    # if sensor.checarCorRGBC(sensor.leRGBCmeio()) == const.PRATA: PrataMeio.reseta()
+    # if sensor.checarCorRGBC(sensor.leRGBCesq()) == const.PRATA: PrataEs.reseta()
 
-    if sensor.checarCorRGBC(sensor.leRGBCdir()) == const.CINZA: CinzaDir.reseta()
-    if sensor.checarCorRGBC(sensor.leRGBCmeio()) == const.CINZA: CinzaMeio.reseta()
-    if sensor.checarCorRGBC(sensor.leRGBCesq()) == const.CINZA: CinzaEs.reseta()
+    # if sensor.checarCorRGBC(sensor.leRGBCdir()) == const.CINZA: CinzaDir.reseta()
+    # if sensor.checarCorRGBC(sensor.leRGBCmeio()) == const.CINZA: CinzaMeio.reseta()
+    # if sensor.checarCorRGBC(sensor.leRGBCesq()) == const.CINZA: CinzaEs.reseta()
 
-    if sensor.leReflexaoDirEX() < const.PRETO: PretoDirEX.reseta()
-    if sensor.leReflexaoDir() < const.PRETO: PretoDir.reseta()
-    if sensor.leReflexaoEsq() < const.PRETO: PretoEs.reseta()
-    if sensor.leReflexaoEsqEX() < const.PRETO: PretoEsEX.reseta()
+    # if sensor.leReflexaoDirEX() < const.PRETO: PretoDirEX.reseta()
+    # if sensor.leReflexaoDir() < const.PRETO: PretoDir.reseta()
+    # if sensor.leReflexaoEsq() < const.PRETO: PretoEs.reseta()
+    # if sensor.leReflexaoEsqEX() < const.PRETO: PretoEsEX.reseta()
 
-    if sensor.leReflexaoDirEX() > const.BRANCO: BrancoDirEX.reseta()
-    if sensor.leReflexaoDir() > const.BRANCO: BrancoDir.reseta()
-    if sensor.leReflexaoEsq() > const.BRANCO: BrancoEs.reseta()
-    if sensor.leReflexaoEsqEX() > const.BRANCO: BrancoEsEX.reseta()
+    # if sensor.leReflexaoDirEX() > const.BRANCO: BrancoDirEX.reseta()
+    # if sensor.leReflexaoDir() > const.BRANCO: BrancoDir.reseta()
+    # if sensor.leReflexaoEsq() > const.BRANCO: BrancoEs.reseta()
+    # if sensor.leReflexaoEsqEX() > const.BRANCO: BrancoEsEX.reseta()
 
+    vdetectados = pcv2.checarVerdes(cam.getFrameAtual())
+    vEsq = False
+    vDir = False
+
+    if len(vdetectados) > 0:
+        for v in vdetectados:
+            if v == 'verde dir':
+                vDir = True
+            elif v == 'verde esq':
+                vEsq = True
+
+    if vEsq and not vDir: ##verde na esquerda
+        VerdeEs.reseta()
+        # mov.reto(andada, TRAS)
+
+    elif vDir and not vEsq: ##verde na direita
+        VerdeDir.reseta()
+        # mov.reto(andada, TRAS)
 
 def thread_reset():
     while True: 

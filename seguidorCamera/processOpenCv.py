@@ -221,6 +221,7 @@ def checarVerdes(img):
     # Processamento - criar binary para processamento
     # frameMenor = frame[int(fheight * 2/10):int(fheight * 8/10), int(fwidth * 2/10):int(fwidth * 8/10)]
     # hsv = cv2.cvtColor(frameMenor, cv2.COLOR_BGR2HSV)
+
     hsv = cv2.cvtColor(frameblur, cv2.COLOR_BGR2HSV)
    
     valorBaixoVerde = np.array([40, 150, 70])
@@ -243,7 +244,7 @@ def checarVerdes(img):
         area = cv2.contourArea(cnt)
         x, y, w, h = cv2.boundingRect(cnt)
         meio = int(y + h/2)
-        deltaH = 80
+        # deltaH = 80
         
         if area > 100:
             # Desenha retângulo verde ao redor da região detectada
@@ -253,7 +254,7 @@ def checarVerdes(img):
             cv2.putText(frame_com_contornos, f"Verde {i+1}", (x, y-10), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            indQuadrado = 60
+            indQuadrado = 80
             y1 = max(0, y - indQuadrado)
             y2 = min(frame.shape[0], y + h + indQuadrado)
             x1 = max(0, x - indQuadrado)
@@ -345,7 +346,6 @@ def checarVerdes(img):
     cam.frameProcessado = frame_com_contornos
     
     return verdesDetectados
-
 
 # Intervalo de azul em HSV
 valorBaixoAzul = np.array([100, 100, 100])

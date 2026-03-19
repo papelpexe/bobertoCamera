@@ -83,7 +83,7 @@ try:
     camera.iniciarThreadCamera()
     sleep(1)
     # cr.iniciarThreadParachoque()
-    # cr.iniciarThreadCronometros()
+    cr.iniciarThreadCronometros()
     # dist.iniciarThreadDistancia()
     # mov.iniciarThreadAnguloMotores()
     coiso = True

@@ -13,10 +13,10 @@ lock = threading.Lock()
 def processamentoVitima():
 
     with lock:
-        if cam.getFrameAtual() is None:
+        if cam.getFrameBack() is None:
             print("frame vazio")
             return
-        frame_copy = cam.getFrameAtual().copy()
+        frame_copy = cam.getFrameBack()
 
     start_time = time.time()
     results = model(frame_copy, imgsz=320, conf=0.7, device=device)

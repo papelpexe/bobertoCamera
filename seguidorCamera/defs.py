@@ -23,7 +23,7 @@ motores.direcao_motor(1, motores.INVERTIDO)
 
 motores.pid_motor(3,10,0)
 
-sensorCor = CorReflexao(Portas.SERIAL5)
+sensorCor = CorReflexao(Portas.SERIAL5) 
 # #placaMuxLaser = PlacaMuxVl53l0x(Portas.SERIAL3)
 giroscopio = Giroscopio(Portas.SERIAL4)
 # #placaMuxCor = PlacaMuxTCS34725(Portas.SERIAL4)
@@ -58,7 +58,7 @@ class ThreadAsyncController:
         """Para a thread levantando exceção nela de forma assíncrona"""
         if self.thread_id and not self.stop_requested:
             self.stop_requested = True
-            print(f"🎯 Enviando exceção assíncrona para thread {self.thread_id}")
+            print(f"Enviando exceção assíncrona para thread {self.thread_id}")
             
             # Método 1: Usando ctypes (mais direto)
             try:
@@ -67,12 +67,12 @@ class ThreadAsyncController:
                     ctypes.py_object(ThreadStopSignal)
                 )
                 if result == 0:
-                    print("❌ Thread não encontrada ou já terminou")
+                    print("Thread não encontrada ou já terminou")
                 elif result > 1:
-                    print("⚠️  Múltiplas exceções, restaurando...")
+                    print("Múltiplas exceções, restaurando...")
                     ctypes.pythonapi.PyThreadState_SetAsyncExc(self.thread_id, None)
             except Exception as e:
-                print(f"❌ Erro no método ctypes: {e}")
+                print(f"Erro no método ctypes: {e}")
                 # Método 2: Fallback usando flag
                 self.stop_requested = True
 

@@ -76,6 +76,38 @@ def verdes():
         mov.girarGraus(ESQ, 160)
         mov.girarGraus(ESQ, 20, cond = con.vendoPreto)
 
+def verdesTeste():
+
+    #180 funcao
+    if cr.VerdeEs.tempo() < 100 and cr.VerdeDir.tempo() < 100:
+        mov.girarGraus(ESQ, 160)
+        mov.girarGraus(ESQ, 20, cond = con.vendoPreto)
+
+    #VERDE ESQUERDA
+    if cr.VerdeEs.tempo() < 100 and cr.VerdeDir.tempo() > 600:
+        mov.reto(2)
+        if cr.VerdeEs.tempo() < 100 and cr.VerdeDir.tempo() > 100:
+            mov.girarGraus(ESQ, 160)
+            mov.girarGraus(ESQ, 20, cond = con.vendoPreto)
+        else:
+            # sleep(0.2)
+            mov.girarGraus(ESQ, 40)
+            mov.girarGraus(ESQ, 60, cond = con.vendoPreto)
+            # mov.reto(andada, TRAS)
+
+    #VERDE DIREITA
+
+    elif cr.VerdeEs.tempo() > 600 and cr.VerdeDir.tempo() < 100:
+        mov.reto(2)
+        if cr.VerdeEs.tempo() < 100 and cr.VerdeDir.tempo() > 100:
+            mov.girarGraus(ESQ, 160)
+            mov.girarGraus(ESQ, 20, cond = con.vendoPreto)
+        else:
+            # sleep(0.2)
+            mov.girarGraus(DIR, 40)
+            mov.girarGraus(DIR, 60, cond = con.vendoPreto)
+            # mov.reto(andada, TRAS)  
+
 def intercessaoRampa():
     decisao = pcv2.verificaIntercessao(cam.getFrameAtual())
 

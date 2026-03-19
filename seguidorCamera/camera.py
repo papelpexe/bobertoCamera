@@ -52,6 +52,7 @@ kframe = None
 #         logger.error(f"Error initializing camera: {e}")
 #         return None
 
+
 # camera = init_camera()
 cameraFront = cv2.VideoCapture(1)
 cameraBack = cv2.VideoCapture(3)
@@ -113,19 +114,19 @@ def atualizaTransmissaoBack():
         
         time.sleep(0.033)  # ~30 FPS
 
-@app.route('/')
-def index():
-    return '<h1>IMAGENS malucas</h1> <img src="/videoFront" width="640">  <img src="/videoBack" width="640">'
+# @app.route('/')
+# def index():
+#     return '<h1>IMAGENS malucas</h1> <img src="/videoFront" width="640">  <img src="/videoBack" width="640">'
 
 @app.route('/videoFront')
 def video_feed():
     return Response(atualizaTransmissaoFront(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/videoBack')
-def video_feedBack():
-    return Response(atualizaTransmissaoBack(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+# @app.route('/videoBack')
+# def video_feedBack():
+#     return Response(atualizaTransmissaoBack(),
+#                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def vercamera():
     global frame, frameProcessado, frameProcessadoBack, cameraFront, cameraBack, frameBack
@@ -138,18 +139,18 @@ def vercamera():
     #     return
 
     retFront, captured_frameFront = cameraFront.read()
-    retBack, captured_frameBack = cameraBack.read()
+    # retBack, captured_frameBack = cameraBack.read()
     # if not ret or captured_frame is None or getattr(captured_frame, 'size', 0) == 0:
     #     logger.debug('Leitura da câmera falhou (ret False ou frame vazio)')
     #     return
 
     with lock:
         frame = captured_frameFront.copy()
-        frameBack = captured_frameBack.copy()
+        # frameBack = None
         # Initialize frameProcessado if it's None
         if frameProcessado is None:
             frameProcessado = captured_frameFront.copy()
-            frameProcessadoBack = captured_frameBack.copy()
+            # frameProcessadoBack = captured_frameBack.copy()
 
 def thread_camera():
     logger.info("Camera thread started")
@@ -157,7 +158,7 @@ def thread_camera():
     while True:
         try:
             vercamera()
-            time.sleep(0.01)  # ~100 FPS capture
+            time.sleep(1/30)  # ~30 FPS capture
         except Exception as e:
             logger.exception(f"Error in camera thread: {e}")
             time.sleep(1)
@@ -169,8 +170,14 @@ def iniciarThreadCamera():
     threadCamera.start()
 
 def getFrameAtual() -> Optional[np.ndarray]:
+    global frame
     with lock:
         return frame.copy() if frame is not None else None
+    
+def getFrameBack() -> Optional[np.ndarray]:
+    global frameBack
+    with lock:
+        return frameBack.copy() if frameBack is not None else None
 
 def getObjDetectados() -> List[Any]:
     with lock:
