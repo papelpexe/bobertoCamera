@@ -57,8 +57,10 @@ kframe = None
 cameraFront = cv2.VideoCapture(1)
 cameraBack = cv2.VideoCapture(3)
 
-camWidth = 160
-camHeight = 120
+indQualidade = 4
+
+camWidth = 160 *indQualidade
+camHeight = 120 *indQualidade
 
 cameraFront.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 cameraFront.set(cv2.CAP_PROP_FRAME_WIDTH, camWidth)

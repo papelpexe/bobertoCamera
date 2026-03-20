@@ -20,9 +20,9 @@ def seguidor_centro(img):
     # Processamento
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    _, binary = cv2.threshold(blur, 120, 255, cv2.THRESH_BINARY_INV)
+    _, binary = cv2.threshold(blur, 130, 255, cv2.THRESH_BINARY_INV)
     # Opcional: binary = cv2.bitwise_not(binary)
-    # cam.frameProcessado = binary
+    cam.frameProcessado = binary
 
     contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     heightbin, widthbin = binary.shape
@@ -78,7 +78,7 @@ def verificaIntercessao(img):
     # Processamento - criar binary para processamento
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    _, binary = cv2.threshold(blur, 84, 255, cv2.THRESH_BINARY_INV)
+    _, binary = cv2.threshold(blur, 130, 255, cv2.THRESH_BINARY_INV)
     
     # Criar imagem colorida para visualização
     visualizacao = cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
@@ -202,7 +202,7 @@ def verificaIntercessao(img):
     cv2.putText(visualizacao, f"Resultado: {resultado}", (10, height - 20), font, 0.7, (255, 255, 255), 2)
 
     # Usar a imagem colorida para visualização
-    # cam.frameProcessado = visualizacao
+    cam.frameProcessado = visualizacao
 
     return resultado
 

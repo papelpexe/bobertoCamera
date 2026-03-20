@@ -31,6 +31,7 @@ def seguidorDeLinha():
     # #python3 ~/seguidorCamera/main.py
     # funcs.verdesTeste()
     funcs.intercessao()
+    # funcs.verdes()
     # funcs.pararNoVermelhoCamera()
     # #processOpenCv.detectaPrata(camera.getFrameAtual())
     # if processOpenCv.verificaLinhaPreta(camera.getFrameAtual()):
@@ -66,6 +67,7 @@ def main():
     try:
         # giroscopio.calibra()
         r=g=b=0
+        val = 255
         while True:
             #VERIFICAÇÃO NO LOOP PRINCIPAL (obrigatória)
             if defs.thread_controller.stop_requested:
@@ -73,8 +75,10 @@ def main():
             
             # ser.m.atualiza_servos() ## joga o servos na posicao correta, para remediar os espasmos
             seguidorDeLinha()
-            val = 255
+            # val += 10
             motores.set_led_rgb_all(val,val,val)
+            # if val >= 255: val = 0
+            # sleep(0.6)
             # vdetectados = pcv2.checarVerdes(cam.getFrameAtual())
 
             # print(giroscopio.le_angulo_z())
@@ -101,6 +105,7 @@ def main():
             #     b=0
             
             # sleep(0.1)
+            # pcv2.verificaIntercessao(cam.getFrameAtual())
 
            
     except defs.ThreadStopSignal:
