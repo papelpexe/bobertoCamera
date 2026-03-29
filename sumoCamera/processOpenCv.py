@@ -54,6 +54,30 @@ def verificaLinhaPreta(img = cam.getFrameAtual()):
     
     # Processamento
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    bin2 =cv2.bitwise_not(gray)
+    blur = cv2.GaussianBlur(bin2, (5, 5), 0)
+    _, binary = cv2.threshold(blur, 120, 255, cv2.THRESH_BINARY_INV)
+
+
+    contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    if len(contours) > 0:
+        return True
+    else:
+        return False
+        
+def verificaLinhaBranca(img = cam.getFrameAtual()):
+    """Verifica se existe uma linha preta na imagem, retornando True ou False."""
+    if img is None: return False; print("frame nulo")
+    frame = img
+    height, width, _ = frame.shape
+    metade = width/2
+
+    # Seleção da linha de interesse/ROI (faixa vertical inferior)
+    roi_height = int(height / 6)
+    roi = frame[0:roi_height, int(metade/2):int(3*metade/2)]
+    
+    # Processamento
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
     _, binary = cv2.threshold(blur, 120, 255, cv2.THRESH_BINARY_INV)
 

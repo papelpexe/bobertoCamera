@@ -75,9 +75,14 @@ def main():
             if defs.thread_controller.stop_requested:
                 raise defs.ThreadStopSignal("Parada solicitada no loop principal")
             
+            while pcv2.verificaLinhaPreta(cam.getFrameAtual()) == False: 
+                mov.m.velocidade_motores_4x4(50,50)
+            
+            mov.reto(const.TRAS, 5)
+            mov.girarGraus(const.DIR, 160)
             
             # ser.m.atualiza_servos() ## joga o servos na posicao correta, para remediar os espasmos
-            seguidorDeLinha()
+            # seguidorDeLinha()
             # val += 10
             # if val >= 255: val = 0
             # sleep(0.6)

@@ -21,7 +21,7 @@ kp = 0.84
 ki = 0
 kd = 1.7
 
-vb_pid = 40
+vb_pid = 65
 
 erroAnterior = 0
 integral = []
