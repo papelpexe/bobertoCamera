@@ -605,6 +605,11 @@ if __name__ == "__main__":
     # O script retorna o valor booleano para o sistema
     sys.exit(0 if result else 1)
 
+
+''' ======================================================
+    Processo para treinamento de IA para detecção de prata
+    ======================================================'''
+
 def salvaImagem(nomeArquivo, dest_dir: str = None):
     """Salva o frame atual em um diretório.
 
@@ -651,4 +656,27 @@ def salvaImagem(nomeArquivo, dest_dir: str = None):
         return False
 
     return True
-   
+
+#Função para salvar a imagem quando apertar uma tecla do teclado especifica = enter
+def salvaImagemOnKeyPress(key=cv2.waitKey(1), nomeArquivo="captura.jpg", dest_dir=None):
+    """Salva a imagem atual quando a tecla especificada for pressionada.
+
+    - `key`: Código da tecla a ser monitorada (padrão é 1, que corresponde a qualquer tecla).
+    - `nomeArquivo`: Nome do arquivo para salvar a imagem.
+    - `dest_dir`: Diretório onde a imagem será salva (opcional).
+
+    Retorna True se a imagem foi salva, False caso contrário.
+    """
+    if key == 13:  # Verifica se a tecla Enter foi pressionada
+        return salvaImagem(nomeArquivo, dest_dir)
+    return False
+
+'''
+-->Teoria de como utilizar a  IA treinada no robo flow para detectar prata:
+
+- Primeiro hávera uma função que pega a mesma seleção superior da imagem que a função intersecao() usa para observar se na frente da linha é branco;
+- Agora haverá uma função que utiliza a idealizada acima para caso não haja linha ele jogar a imagem para a IA treinada no robo flow para detectar se há prata ou não;
+- Na área de resgate é só usar a função com a condição de vendo a linha
+
+--POSSíVEL Problma: A IA comer todo o processamento do robo
+'''
